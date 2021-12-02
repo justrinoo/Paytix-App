@@ -88,6 +88,7 @@ const styles = StyleSheet.create({
   authButtonTitle: {
     textAlign: 'center',
     fontWeight: 'bold',
+    fontFamily: 'Mulish-Bold',
     fontSize: 16,
     color: '#F7F7FC',
   },

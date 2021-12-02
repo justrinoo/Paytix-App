@@ -1,28 +1,75 @@
-import React from 'react';
-import {View, Image, StyleSheet, Text, Touch} from 'react-native';
+import React, {useState} from 'react';
+import {View, Image, StyleSheet, Text, Touch, ScrollView} from 'react-native';
 import {Input, Button} from '../../components';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 export default function SignUp({navigation}) {
+  // const [showEyeStatus, setShowEyeStatus] = useState(false);
+  // const [firstName, setFirstName] = useState('');
+  // const [lastName, setLastName] = useState('');
+  // const [email, setEmail] = useState('');
+  // const [phoneNumber, setPhoneNumber] = useState('');
+  // const [password, setPassword] = useState('');
+  // const handleSubmit = () => {
+  //   const setDataFormSubmit = {
+  //     firstName,
+  //     lastName,
+  //     email,
+  //     phoneNumber,
+  //     password,
+  //   };
+
+  //   console.log('Submit Prevent running..', setDataFormSubmit);
+  // };
+
+  // console.log(showEyeStatus);
+
   return (
-    <View style={styles.auth_signupContainer}>
+    <ScrollView contentContainerStyle={styles.auth_signupContainer}>
       <Image
         source={require('../../assets/images/tickitz.png')}
         style={styles.auth_signupImage}
       />
       <Text style={styles.auth_signupTitle}>Sign Up</Text>
+      {/* <Input
+        childrenType="default"
+        childrenText="First Name"
+        childrenOnChange={() => null}
+        childrenPlaceHolder="Write your firstName"
+      />
+      <Input
+        childrenType="default"
+        childrenText="Last Name"
+        childrenOnChange={() => null}
+        childrenPlaceHolder="Write your lastName"
+      /> */}
       <Input
         childrenType="email-address"
         childrenText="Email"
+        childrenOnChange={() => null}
         childrenPlaceHolder="Write your email"
-        childrenOnChange={() => null}
       />
-      <Input
-        childrenType="visible-password"
-        childrenText="Password"
-        childrenPlaceHolder="Write your password"
+      {/* <Input
+        childrenType="numeric"
+        childrenText="Phone Number"
         childrenOnChange={() => null}
-      />
-      <Button childrenOnPress={() => null}>
+        childrenPlaceHolder="Write your PhoneNumber"
+      /> */}
+      <View style={styles.authContainerEye}>
+        <Icon
+          name="eye-slash"
+          color="#A0A3BD"
+          size={15}
+          style={styles.auth_Eye}
+        />
+
+        <Input
+          childrenText="Password"
+          isPassword
+          childrenOnChange={() => null}
+          childrenPlaceHolder="Write your password"
+        />
+      </View>
+      <Button>
         <Text style={styles.authButtonTitle}>Join for free</Text>
       </Button>
 
@@ -65,7 +112,7 @@ export default function SignUp({navigation}) {
             style={styles.authThirdParty}></Icon.Button>
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -89,6 +136,7 @@ const styles = StyleSheet.create({
   authButtonTitle: {
     textAlign: 'center',
     fontWeight: 'bold',
+    fontFamily: 'Mulish-Bold',
     fontSize: 16,
     color: '#F7F7FC',
   },
@@ -139,5 +187,13 @@ const styles = StyleSheet.create({
     width: '14%',
     marginLeft: 5,
     marginRight: 5,
+  },
+  authContainerEye: {
+    position: 'relative',
+  },
+  auth_Eye: {
+    right: 20,
+    bottom: 25,
+    position: 'absolute',
   },
 });

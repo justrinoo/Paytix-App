@@ -5,6 +5,7 @@ export default function InputComponent({
   childrenPlaceHolder,
   childrenOnChange,
   childrenText,
+  isPassword,
 }) {
   return (
     <>
@@ -17,6 +18,7 @@ export default function InputComponent({
             placeholderTextColor="#A0A3BD"
             placeholder={childrenPlaceHolder}
             onChangeText={childrenOnChange}
+            secureTextEntry={isPassword ? true : null}
           />
         </View>
       </View>
@@ -29,10 +31,8 @@ const styles = StyleSheet.create({
     marginTop: 29,
   },
   inputComponent: {
-    paddingLeft: 24,
-    paddingRight: 24,
-    paddingTop: 18,
-    paddingBottom: 18,
+    paddingHorizontal: 24,
+    paddingVertical: 18,
     borderRadius: 12,
     borderWidth: 1,
     borderStyle: 'solid',
