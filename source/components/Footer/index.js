@@ -79,9 +79,11 @@ export default function index() {
 const styles = StyleSheet.create({
   // FOOTER
   homeRows_footer: {
+    backgroundColor: '#ffffff',
     marginTop: 140,
   },
   homeRows_footer_BannerImage: {
+    marginTop: 75,
     width: 132,
     height: 36,
     marginLeft: 15,
@@ -156,5 +158,6 @@ const styles = StyleSheet.create({
     color: '#6E7191',
     fontSize: 13,
     fontWeight: '400',
+    marginBottom: 64,
   },
 });

@@ -7,6 +7,7 @@ import {
   Text,
   TextInput,
   TouchableHighlight,
+  FlatList,
 } from 'react-native';
 import {Header, Card, Footer} from '../../components';
 
@@ -83,10 +84,18 @@ export default function Home({navigation}) {
             contentContainerStyle={styles.homeRows_listmovie_column_card}>
             {dummyData.map((value, idx) => (
               <Card index={idx} key={idx}>
-                <Image
-                  source={value.image}
-                  style={styles.homeRows_listmovie_card_image}
-                />
+                <TouchableHighlight
+                  underlayColor="none"
+                  onPress={() =>
+                    navigation.navigate('Detail', {
+                      value,
+                    })
+                  }>
+                  <Image
+                    source={value.image}
+                    style={styles.homeRows_listmovie_card_image}
+                  />
+                </TouchableHighlight>
               </Card>
             ))}
           </ScrollView>
@@ -140,12 +149,13 @@ export default function Home({navigation}) {
                       {movie.category}
                     </Text>
                     <TouchableHighlight
-                      style={styles.homeRows_listUpCommingDate_movie_detail}>
+                      underlayColor="none"
+                      style={styles.homeRows_listUpCommingDate_movie_detail}
+                      onPress={() => navigation.navigate('Detail')}>
                       <Text
                         style={
                           styles.homeRows_listUpCommingDate_title_movie_detail
-                        }
-                        onPress={() => navigation.navigate('Detail')}>
+                        }>
                         Details
                       </Text>
                     </TouchableHighlight>
@@ -177,9 +187,8 @@ export default function Home({navigation}) {
             latest updates via email .
           </Text>
         </View>
-
-        <Footer />
       </View>
+      <Footer />
     </ScrollView>
   );
 }
@@ -190,6 +199,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   homeMain_rowParent: {
+    position: 'relative',
     marginVertical: 33,
     marginHorizontal: 24,
   },
