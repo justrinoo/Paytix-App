@@ -10,7 +10,7 @@ import {
 
 import Icon from 'react-native-vector-icons/Ionicons';
 
-export default function Header() {
+export default function Header(props) {
   const [statusMenu, setStatusMenu] = useState(false);
 
   const menuNavigation = () => {
@@ -19,6 +19,11 @@ export default function Header() {
     } else {
       setStatusMenu(false);
     }
+  };
+
+  const goToNextScreen = screen => {
+    props.navigation.navigate(screen);
+    setStatusMenu(false);
   };
 
   return (
@@ -31,12 +36,21 @@ export default function Header() {
           />
         </View>
         <View style={styles.homeMain_spaceColumn}>
-          <Icon
-            name="menu-outline"
-            color="#000000"
-            size={20}
-            onPress={menuNavigation}
-          />
+          {!statusMenu ? (
+            <Icon
+              name="menu-outline"
+              color="#000000"
+              size={20}
+              onPress={menuNavigation}
+            />
+          ) : (
+            <Icon
+              name="close-outline"
+              color="#000000"
+              size={20}
+              onPress={menuNavigation}
+            />
+          )}
         </View>
       </View>
 
@@ -50,23 +64,25 @@ export default function Header() {
             />
             <View style={styles.homeMain_navigationLine}></View>
             <View>
-              <Text style={styles.homeMain_navigationTextLinkScreen}>
-                Location
+              <Text
+                style={styles.homeMain_navigationTextLinkScreen}
+                onPress={() => goToNextScreen('Home')}>
+                Home
               </Text>
             </View>
             <View style={styles.homeMain_navigationLine}></View>
             <View>
-              <Text style={styles.homeMain_navigationTextLinkScreen}>Home</Text>
-            </View>
-            <View style={styles.homeMain_navigationLine}></View>
-            <View>
-              <Text style={styles.homeMain_navigationTextLinkScreen}>
+              <Text
+                style={styles.homeMain_navigationTextLinkScreen}
+                onPress={() => goToNextScreen('Payment')}>
                 Payment
               </Text>
             </View>
             <View style={styles.homeMain_navigationLine}></View>
             <View>
-              <Text style={styles.homeMain_navigationTextLinkScreen}>
+              <Text
+                style={styles.homeMain_navigationTextLinkScreen}
+                onPress={() => goToNextScreen('Profile')}>
                 Profile
               </Text>
             </View>
@@ -83,7 +99,6 @@ export default function Header() {
 
 const styles = StyleSheet.create({
   homeMain_Header: {
-    elevation: 5,
     backgroundColor: '#FFFFFF',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -97,8 +112,7 @@ const styles = StyleSheet.create({
     height: 24,
   },
   homeMain_navigationContainer: {
-    marginHorizontal: 24,
-    marginVertical: 16,
+    position: 'relative',
     backgroundColor: '#ffffff',
     // flex: 1,
   },
@@ -106,9 +120,13 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   homeMain_navigationInput: {
+    flexDirection: 'column',
+    marginVertical: 16,
+    marginHorizontal: 35,
     paddingLeft: 52,
     backgroundColor: '#ffffff',
     borderRadius: 4,
+    width: '85%',
     borderWidth: 1,
     borderStyle: 'solid',
     borderColor: '#DEDEDE',
@@ -131,5 +149,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
     marginTop: 56,
+    marginBottom: 20,
   },
 });

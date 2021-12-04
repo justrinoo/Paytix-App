@@ -59,7 +59,7 @@ export default function Home({navigation}) {
 
   return (
     <ScrollView contentContainerStyle={styles.homeMain_container}>
-      <Header />
+      <Header navigation={navigation} />
       <View style={styles.homeMain_rowParent}>
         <Text style={styles.homeMain_HeadingDesc}>
           Nearest Cinema, Newest Movie,
@@ -199,7 +199,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   homeMain_rowParent: {
-    position: 'relative',
     marginVertical: 33,
     marginHorizontal: 24,
   },

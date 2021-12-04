@@ -8,11 +8,12 @@ import {
   TouchableHighlight,
 } from 'react-native';
 import {Header, Footer} from '../../components';
+
 import Icon from 'react-native-vector-icons/FontAwesome5';
-export default function Seats() {
+export default function Seats({navigation}) {
   return (
     <ScrollView contentContainerStyle={styles.Seat_main}>
-      <Header />
+      <Header navigation={navigation} />
       <View style={styles.Seat_container}>
         <Text style={styles.Seat_title}>Choose Your Seat</Text>
 
@@ -25,12 +26,7 @@ export default function Seats() {
               marginTop: 31,
             }}></View>
 
-          <View>
-            <Text
-              style={{color: '#6E7191', textAlign: 'center', marginTop: 12}}>
-              Coming Soon bro!
-            </Text>
-          </View>
+          <View style={styles.Seat_SeatsContainer}></View>
 
           {/* SEAT */}
           <View style={styles.Seat_Keys}>
@@ -172,7 +168,8 @@ export default function Seats() {
 
           <TouchableHighlight
             underlayColor="none"
-            style={styles.orderInfo_button}>
+            style={styles.orderInfo_button}
+            onPress={() => navigation.navigate('Payment')}>
             <Text style={styles.orderInfo_button_title}>Checkout Now</Text>
           </TouchableHighlight>
         </View>

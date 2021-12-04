@@ -21,7 +21,7 @@ export default function DetailMovie({value, navigation}) {
 
   return (
     <ScrollView contentContainerStyle={styles.homeDetail_Container}>
-      <Header />
+      <Header navigation={navigation} />
       <View style={styles.homeDetailRows}>
         <View style={styles.homeDetailImage_row}>
           <Image
