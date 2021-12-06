@@ -11,6 +11,13 @@ import {Header, Footer} from '../../components';
 
 import Icon from 'react-native-vector-icons/FontAwesome5';
 export default function Seats({navigation}) {
+  const listAlphabet = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+  let seats = [];
+  for (let i = 1; i <= 36; i++) {
+    seats.push(i);
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.Seat_main}>
       <Header navigation={navigation} />
@@ -23,10 +30,31 @@ export default function Seats({navigation}) {
               height: 5,
               backgroundColor: '#9570FE',
               borderRadius: 3,
-              marginTop: 31,
             }}></View>
 
-          <View style={styles.Seat_SeatsContainer}></View>
+          <View style={styles.Seat_SeatsContainer}>
+            <View style={styles.Seat_ListSeats}>
+              <View style={styles.Seat_ListSeats_column}>
+                {seats.map((seat, idx) => (
+                  <View
+                    key={idx}
+                    style={[
+                      styles.Seat_ListSeats_choose_available,
+                      styles.Seat_ListSeats_choose_selected,
+                      styles.Seat_ListSeats_choose_sold,
+                    ]}></View>
+                ))}
+              </View>
+              <View style={styles.Seat_ListSeats_column_space}></View>
+              <View style={styles.Seat_ListSeats_column}>
+                {seats.map((seat, idx) => (
+                  <View
+                    key={idx}
+                    style={styles.Seat_ListSeats_choose_available}></View>
+                ))}
+              </View>
+            </View>
+          </View>
 
           {/* SEAT */}
           <View style={styles.Seat_Keys}>
@@ -35,7 +63,7 @@ export default function Seats({navigation}) {
               <View>
                 <View style={styles.Seat_Keys_column_alphabet_left}>
                   <Icon name="arrow-down" size={20} color="#14142B" />
-                  <Text style={styles.Seat_Keys_column_title}>A - G</Text>
+                  <Text style={styles.Seat_Keys_column_title}>A - F</Text>
                 </View>
                 <View style={styles.Seat_Keys_column_seat_options}>
                   <View
@@ -65,7 +93,7 @@ export default function Seats({navigation}) {
               <View>
                 <View style={styles.Seat_Keys_column_alphabet_right}>
                   <Icon name="arrow-right" size={20} color="#14142B" />
-                  <Text style={styles.Seat_Keys_column_title}>1 - 14</Text>
+                  <Text style={styles.Seat_Keys_column_title}>1 - 12</Text>
                 </View>
                 <View style={styles.Seat_Keys_column_seat_options}>
                   <View
@@ -187,7 +215,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#EFF0F6',
   },
   Seat_container: {
-    marginHorizontal: 24,
+    marginHorizontal: 34,
   },
   Seat_title: {
     marginTop: 32,
@@ -240,6 +268,49 @@ const styles = StyleSheet.create({
     color: '#4E4B66',
     fontSize: 13,
     marginLeft: 10,
+  },
+  Seat_ListSeats: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-between',
+  },
+  Seat_ListSeats_column: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    width: '53%',
+  },
+  Seat_ListSeats_column_space: {
+    width: '2%',
+  },
+  Seat_SeatsContainer: {
+    marginTop: 16,
+  },
+  Seat_ListSeats_choose_available: {
+    backgroundColor: '#D6D8E7',
+    width: 14,
+    height: 14,
+    borderRadius: 2,
+    marginHorizontal: 3,
+    marginTop: 6,
+    marginVertical: 2,
+  },
+  Seat_ListSeats_choose_sold: {
+    backgroundColor: '#6E7191',
+    width: 14,
+    height: 14,
+    borderRadius: 2,
+    marginHorizontal: 3,
+    marginTop: 6,
+    marginVertical: 2,
+  },
+  Seat_ListSeats_choose_selected: {
+    backgroundColor: '#5F2EEA',
+    width: 14,
+    height: 14,
+    borderRadius: 2,
+    marginHorizontal: 3,
+    marginTop: 6,
+    marginVertical: 2,
   },
 
   // ORDER INFO

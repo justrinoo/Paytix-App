@@ -1,12 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {
-  View,
-  Image,
-  StyleSheet,
-  Text,
-  TextInput,
-  Dimensions,
-} from 'react-native';
+import {View, Image, StyleSheet, Text, TextInput} from 'react-native';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 

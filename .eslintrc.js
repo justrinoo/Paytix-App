@@ -7,12 +7,12 @@ module.exports = {
     }
   },
   plugins: ['react', 'react-native', 'react-hooks', 'prettier'],
-  rules: {
-    'prettier/prettier': [
-      'error',
-      {
-        endOfLine: 'auto',
-      },
-    ],
-  },
+    rules: {
+      'prettier/prettier': [
+        'error',
+        {
+          endOfLine: 'auto',
+        },
+      ],
+    },
 };

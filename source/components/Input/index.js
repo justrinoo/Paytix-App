@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
   },
   inputComponent: {
     paddingHorizontal: 24,
-    paddingVertical: 18,
+    paddingVertical: 15,
     borderRadius: 12,
     borderWidth: 1,
     borderStyle: 'solid',
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   inputComponentLabel: {
-    marginBottom: 12,
+    marginBottom: 10,
     color: '#4E4B66',
     fontSize: 16,
   },

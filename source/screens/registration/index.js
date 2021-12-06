@@ -2,24 +2,33 @@ import React, {useState} from 'react';
 import {View, Image, StyleSheet, Text, Touch, ScrollView} from 'react-native';
 import {Input, Button} from '../../components';
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import axios from '../../utils/axios';
 export default function SignUp({navigation}) {
-  // const [showEyeStatus, setShowEyeStatus] = useState(false);
-  // const [firstName, setFirstName] = useState('');
-  // const [lastName, setLastName] = useState('');
-  // const [email, setEmail] = useState('');
-  // const [phoneNumber, setPhoneNumber] = useState('');
-  // const [password, setPassword] = useState('');
-  // const handleSubmit = () => {
-  //   const setDataFormSubmit = {
-  //     firstName,
-  //     lastName,
-  //     email,
-  //     phoneNumber,
-  //     password,
-  //   };
+  const [showEyeStatus, setShowEyeStatus] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [password, setPassword] = useState('');
 
-  //   console.log('Submit Prevent running..', setDataFormSubmit);
-  // };
+  const handleSubmit = async () => {
+    try {
+      const setDataFormSubmit = {
+        firstName,
+        lastName,
+        email,
+        phoneNumber,
+        password,
+      };
+
+      const response = await axios.post('auth/register', setDataFormSubmit);
+
+      console.log('Submit Prevent running..', setDataFormSubmit);
+      console.log('Success Create Account', response.data);
+    } catch (error) {
+      console.log('Failed to create account.', error);
+    }
+  };
 
   // console.log(showEyeStatus);
 
@@ -30,30 +39,30 @@ export default function SignUp({navigation}) {
         style={styles.auth_signupImage}
       />
       <Text style={styles.auth_signupTitle}>Sign Up</Text>
-      {/* <Input
+      <Input
         childrenType="default"
         childrenText="First Name"
-        childrenOnChange={() => null}
+        childrenOnChange={firstNameText => setFirstName(firstNameText)}
         childrenPlaceHolder="Write your firstName"
       />
       <Input
         childrenType="default"
         childrenText="Last Name"
-        childrenOnChange={() => null}
+        childrenOnChange={lastNameText => setLastName(lastNameText)}
         childrenPlaceHolder="Write your lastName"
-      /> */}
+      />
       <Input
         childrenType="email-address"
         childrenText="Email"
-        childrenOnChange={() => null}
+        childrenOnChange={emailText => setEmail(emailText)}
         childrenPlaceHolder="Write your email"
       />
-      {/* <Input
+      <Input
         childrenType="numeric"
         childrenText="Phone Number"
-        childrenOnChange={() => null}
+        childrenOnChange={phoneNumberText => setPhoneNumber(phoneNumberText)}
         childrenPlaceHolder="Write your PhoneNumber"
-      /> */}
+      />
       <View style={styles.authContainerEye}>
         <Icon
           name="eye-slash"
@@ -65,11 +74,11 @@ export default function SignUp({navigation}) {
         <Input
           childrenText="Password"
           isPassword
-          childrenOnChange={() => null}
+          childrenOnChange={passwordText => setPassword(passwordText)}
           childrenPlaceHolder="Write your password"
         />
       </View>
-      <Button>
+      <Button childrenOnPress={handleSubmit}>
         <Text style={styles.authButtonTitle}>Join for free</Text>
       </Button>
 

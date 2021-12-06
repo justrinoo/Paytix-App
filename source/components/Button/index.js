@@ -1,12 +1,10 @@
 import React from 'react';
-import {TouchableHighlight, StyleSheet, View, Text} from 'react-native';
+import {TouchableOpacity, StyleSheet, View, Text} from 'react-native';
 export default function ButtonComponent({children, childrenOnPress}) {
   return (
-    <View style={styles.buttonContainer}>
-      <TouchableHighlight onPress={childrenOnPress} underlayColor="none">
-        <View style={styles.buttonComponent}>{children}</View>
-      </TouchableHighlight>
-    </View>
+    <TouchableOpacity onPress={childrenOnPress} activeOpacity={1}>
+      <View style={styles.buttonComponent}>{children}</View>
+    </TouchableOpacity>
   );
 }
 

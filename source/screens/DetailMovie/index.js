@@ -12,11 +12,15 @@ import {
 } from 'react-native';
 
 import DatePicker from 'react-native-date-picker';
+import {Picker} from '@react-native-picker/picker';
+
 // import Icon from 'react-native-vector-icons/FontAwesome5';
 
 export default function DetailMovie({value, navigation}) {
   const [date, setDate] = useState(new Date());
   const [open, setOpen] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState();
+
   // console.log('data =>', value);
 
   return (
@@ -96,6 +100,7 @@ export default function DetailMovie({value, navigation}) {
           {/* <Text style={styles.scheduleDetail_title}>Showtimes and Tickets</Text>
           <View style={styles.scheduleDetail_filterOptions}></View> */}
           {/* <Icon name="calendar-week" color="#4E4B66" size={20} /> */}
+
           <View style={{flexDirection: 'row', justifyContent: 'center'}}>
             <DatePicker
               modal
@@ -120,7 +125,26 @@ export default function DetailMovie({value, navigation}) {
               </Text>
             </TouchableHighlight>
           </View>
-
+          <View
+            style={{
+              marginTop: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <Picker
+              style={{
+                backgroundColor: '#EFF0F6',
+                color: '#4E4B66',
+                width: '70%',
+                borderRadius: 16,
+              }}>
+              <Picker.Item label="Set a city" />
+              <Picker.Item label="Jakarta" value="Jakarta" />
+              <Picker.Item label="Bali" value="Bali" />
+              <Picker.Item label="Bandung" value="Bandung" />
+            </Picker>
+          </View>
           <View style={styles.scheduleDetail_rows}>
             <View style={styles.scheduleDetail_card}>
               <View style={styles.scheduleDetail_card_container}>
