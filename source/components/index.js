@@ -4,5 +4,9 @@ import Button from './Button';
 import Header from './Header';
 import Footer from './Footer';
 import Card from './Card';
+import TextError from './TextError';
 
-export {Input, Button, Header, Card, Footer};
+// BREADCUMB COMPONENT
+// PAGES HOME
+import UpCommingMovie from './Home/upcomming';
+export {Input, Button, Header, Card, Footer, TextError, UpCommingMovie};

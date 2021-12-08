@@ -1,10 +1,20 @@
-import React, {useState} from 'react';
-import {View, Image, StyleSheet, Text, Touch, ScrollView} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {
+  View,
+  Image,
+  StyleSheet,
+  Text,
+  ActivityIndicator,
+  ScrollView,
+} from 'react-native';
 import {Input, Button} from '../../components';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import axios from '../../utils/axios';
 export default function SignUp({navigation}) {
   const [showEyeStatus, setShowEyeStatus] = useState(false);
+  const [error, setError] = useState(false);
+  const [isLoading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -20,17 +30,42 @@ export default function SignUp({navigation}) {
         phoneNumber,
         password,
       };
-
+      for (const value in setDataFormSubmit) {
+        if (setDataFormSubmit[value] === '') {
+          setError(true);
+          setMessage('Field is required.');
+          return false;
+        }
+      }
+      setLoading(true);
       const response = await axios.post('auth/register', setDataFormSubmit);
-
-      console.log('Submit Prevent running..', setDataFormSubmit);
-      console.log('Success Create Account', response.data);
+      console.log('Success Create Account =>', response.data);
+      const fullName = `${response.data.data.firstName} ${response.data.data.lastName}`;
+      setLoading(false);
+      setFirstName('');
+      setLastName('');
+      setEmail('');
+      setPhoneNumber('');
+      setPassword('');
+      navigation.navigate('SuccessScreen', {
+        fullName: fullName,
+      });
     } catch (error) {
-      console.log('Failed to create account.', error);
+      const err = error.response.data;
+      setLoading(false);
+      setError(true);
+      setMessage(err.message);
+      console.log('Failed to create account.', err.message);
     }
   };
 
-  // console.log(showEyeStatus);
+  // useEffect(() => {
+  //   return !checkToken
+  //     ? navigation.navigate('Registration')
+  //     : navigation.navigate('SuccessScreen');
+  // }, []);
+
+  const isDisabled = password.split('').length >= 6 ? true : false;
 
   return (
     <ScrollView contentContainerStyle={styles.auth_signupContainer}>
@@ -78,8 +113,21 @@ export default function SignUp({navigation}) {
           childrenPlaceHolder="Write your password"
         />
       </View>
+      <View>
+        {error ? (
+          <Text style={{color: 'red', textAlign: 'center', marginTop: 10}}>
+            {message}
+          </Text>
+        ) : null}
+      </View>
       <Button childrenOnPress={handleSubmit}>
-        <Text style={styles.authButtonTitle}>Join for free</Text>
+        <Text style={styles.authButtonTitle}>
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#DEDEDE" />
+          ) : (
+            'Join for free'
+          )}
+        </Text>
       </Button>
 
       <View>

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Header, Footer} from '../../components';
 import {
   View,
@@ -6,102 +6,175 @@ import {
   StyleSheet,
   ScrollView,
   Image,
-  Button,
-  TextInput,
   TouchableHighlight,
+  ActivityIndicator,
+  ToastAndroid,
+  FlatList,
 } from 'react-native';
 
 import DatePicker from 'react-native-date-picker';
 import {Picker} from '@react-native-picker/picker';
+import {getMovieById} from '../../stores/action/movie';
+import {useDispatch, useSelector} from 'react-redux';
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import axios from '../../utils/axios';
+import {getAllSchedule} from '../../stores/action/schedule';
 
 // import Icon from 'react-native-vector-icons/FontAwesome5';
 
-export default function DetailMovie({value, navigation}) {
+export default function DetailMovie({navigation, value, route}) {
+  const state = useSelector(state => state.schedule);
+  // SCHEDULE
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(2);
+  const [schedules, setSchedules] = useState(state.schedules);
+
+  const dispatch = useDispatch();
+  // const movieState = useSelector(state => state.movie);
+  const [loading, setLoading] = useState(false);
+  const [movie, setMovie] = useState({});
+  const [provinces, setProvinces] = useState([]);
   const [date, setDate] = useState(new Date());
   const [open, setOpen] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState();
+  const {id} = route.params;
+  const [selectedLanguage, setSelectedLanguage] = useState('');
 
-  // console.log('data =>', value);
+  const getMovieId = async () => {
+    try {
+      setLoading(true);
+      const response = await dispatch(getMovieById(id));
+      setLoading(false);
+      setMovie(response.value.data.data[0]);
+    } catch (error) {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    getMovieId();
+    getLocationProvince();
+    getListAllSchedule();
+  }, [id, page, limit]);
+
+  const chooseDateNow = dateNow => {
+    const tanggalSekarang = new Date(Date.now()).toISOString().split('T')[0];
+    const userChooseDate = new Date(dateNow).toISOString().split('T')[0];
+    if (userChooseDate >= tanggalSekarang) {
+      setDate(dateNow);
+    } else {
+      showToast("Can't choose yesterday's date");
+    }
+  };
+
+  const getLocationProvince = async () => {
+    try {
+      const response = await axios.get(
+        'http://www.emsifa.com/api-wilayah-indonesia/api/provinces.json',
+      );
+      setProvinces(response.data);
+    } catch (error) {
+      setProvinces([]);
+    }
+  };
+
+  const getListAllSchedule = async () => {
+    try {
+      const response = await dispatch(getAllSchedule(page, limit));
+      setSchedules(response.value.data.data);
+    } catch (error) {
+      console.log('error =>', error);
+    }
+  };
+
+  const showToast = message => {
+    ToastAndroid.show(message, ToastAndroid.LONG);
+  };
+
+  console.log('list schedule =>', schedules);
   return (
     <ScrollView contentContainerStyle={styles.homeDetail_Container}>
       <Header navigation={navigation} />
       <View style={styles.homeDetailRows}>
-        <View style={styles.homeDetailImage_row}>
-          <Image
-            style={styles.homeDetail_ImageMovie}
-            source={require('../../assets/images/movies1.png')}
-          />
-        </View>
-        <View style={styles.homeDetail_contentText}>
-          <Text style={styles.homeDetail_TextMovie}>
-            Spider-Man: Homecoming
-          </Text>
-          <Text style={styles.homeDetail_CategoryMovie}>
-            Adventure, Action, Sci-Fi
-          </Text>
-        </View>
-
-        <View style={styles.homeDetail_Description}>
-          <View style={styles.homeDetail_Description_column}>
-            <Text style={styles.homeDetail_Description_column_label}>
-              Release date
-            </Text>
-            <Text style={styles.homeDetail_Description_desc_title}>
-              June 28, 2021
-            </Text>
+        {!loading ? (
+          <View>
+            <View style={styles.homeDetailImage_row}>
+              <Image
+                style={styles.homeDetail_ImageMovie}
+                source={{
+                  uri: `https://paytix.herokuapp.com/uploads/movie/${movie.image}`,
+                }}
+              />
+            </View>
+            <View style={styles.homeDetail_contentText}>
+              <Text style={styles.homeDetail_TextMovie}>{movie.title}</Text>
+              <Text style={styles.homeDetail_CategoryMovie}>
+                {movie.category}
+              </Text>
+            </View>
+            <View style={styles.homeDetail_Description}>
+              <View style={styles.homeDetail_Description_column}>
+                <Text style={styles.homeDetail_Description_column_label}>
+                  Release date
+                </Text>
+                <Text style={styles.homeDetail_Description_desc_title}>
+                  {new Date(movie.releaseDate).toDateString()}
+                </Text>
+              </View>
+              <View style={styles.homeDetail_Description_column}>
+                <Text style={styles.homeDetail_Description_column_label}>
+                  Directed by
+                </Text>
+                <Text style={styles.homeDetail_Description_desc_title}>
+                  {movie.directedBy}
+                </Text>
+              </View>
+              <View style={styles.homeDetail_Description_column}>
+                <Text style={styles.homeDetail_Description_column_label}>
+                  Duration
+                </Text>
+                <Text style={styles.homeDetail_Description_desc_title}>
+                  {movie.durationHour} hrs {movie.durationMinute} min
+                </Text>
+              </View>
+              <View style={styles.homeDetail_Description_column}>
+                <Text style={styles.homeDetail_Description_column_label}>
+                  Casts
+                </Text>
+                <Text
+                  style={styles.homeDetail_Description_desc_title_Casts}
+                  numberOfLines={1}
+                  ellipsizeMode="tail">
+                  {movie.casts}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.homeDetail_Line}></View>
+            <View style={styles.homeDetail_SynopsisContainer}>
+              <Text style={styles.homeDetail_Synopsis_title}>Synopsis</Text>
+              <Text style={styles.homeDetail_Synopsis_desc}>
+                {movie.synopsis}
+              </Text>
+            </View>
           </View>
-          <View style={styles.homeDetail_Description_column}>
-            <Text style={styles.homeDetail_Description_column_label}>
-              Directed by
-            </Text>
-            <Text style={styles.homeDetail_Description_desc_title}>
-              Jon Watss
-            </Text>
-          </View>
-          <View style={styles.homeDetail_Description_column}>
-            <Text style={styles.homeDetail_Description_column_label}>
-              Duration
-            </Text>
-            <Text style={styles.homeDetail_Description_desc_title}>
-              2 hrs 13 min
-            </Text>
-          </View>
-          <View style={styles.homeDetail_Description_column}>
-            <Text style={styles.homeDetail_Description_column_label}>
-              Casts
-            </Text>
+        ) : (
+          <View>
             <Text
-              style={styles.homeDetail_Description_desc_title_Casts}
-              numberOfLines={1}
-              ellipsizeMode="tail">
-              Tom Holland, Robert Downey Jr., etc.
+              style={{color: '#000000', textAlign: 'center', marginBottom: 5}}>
+              Please Wait...
             </Text>
+            <ActivityIndicator size="large" />
           </View>
-        </View>
-
-        <View style={styles.homeDetail_Line}></View>
-
-        <View style={styles.homeDetail_SynopsisContainer}>
-          <Text style={styles.homeDetail_Synopsis_title}>Synopsis</Text>
-          <Text style={styles.homeDetail_Synopsis_desc}>
-            Thrilled by his experience with the Avengers, Peter returns home,
-            where he lives with his Aunt May, under the watchful eye of his new
-            mentor Tony Stark, Peter tries to fall back into his normal daily
-            routine - distracted by thoughts of proving himself to be more than
-            just your friendly neighborhood Spider-Man - but when the Vulture
-            emerges as a new villain, everything that Peter holds most important
-            will be threatened.
-          </Text>
-        </View>
+        )}
 
         {/* SCHEDULES */}
         <View style={styles.scheduleDetail_Container}>
-          {/* <Text style={styles.scheduleDetail_title}>Showtimes and Tickets</Text>
-          <View style={styles.scheduleDetail_filterOptions}></View> */}
-          {/* <Icon name="calendar-week" color="#4E4B66" size={20} /> */}
+          <Text style={styles.scheduleDetail_title}>Showtimes and Tickets</Text>
 
-          <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+            }}>
             <DatePicker
               modal
               open={open}
@@ -110,7 +183,8 @@ export default function DetailMovie({value, navigation}) {
               textColor="#FFFFFF"
               onConfirm={date => {
                 setOpen(false);
-                setDate(date);
+                chooseDateNow(date);
+                // setDate(date);
               }}
               onCancel={() => {
                 setOpen(false);
@@ -120,9 +194,23 @@ export default function DetailMovie({value, navigation}) {
               style={styles.scheduleDetail_card_button_date}
               onPress={() => setOpen(true)}
               underlayColor="none">
-              <Text style={styles.scheduleDetail_card_button_date_title}>
-                Set a Date
-              </Text>
+              <View>
+                <View>
+                  <Icon
+                    name="calendar-week"
+                    color="#4E4B66"
+                    style={{position: 'absolute', left: 18}}
+                    size={20}
+                  />
+                </View>
+                <Text style={styles.scheduleDetail_card_button_date_title}>
+                  {date ? (
+                    new Date(date).toISOString().split('T')[0]
+                  ) : (
+                    <Text>Set a Date</Text>
+                  )}
+                </Text>
+              </View>
             </TouchableHighlight>
           </View>
           <View
@@ -132,76 +220,97 @@ export default function DetailMovie({value, navigation}) {
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-            <Picker
+            <View
               style={{
                 backgroundColor: '#EFF0F6',
-                color: '#4E4B66',
                 width: '70%',
                 borderRadius: 16,
               }}>
-              <Picker.Item label="Set a city" />
-              <Picker.Item label="Jakarta" value="Jakarta" />
-              <Picker.Item label="Bali" value="Bali" />
-              <Picker.Item label="Bandung" value="Bandung" />
-            </Picker>
-          </View>
-          <View style={styles.scheduleDetail_rows}>
-            <View style={styles.scheduleDetail_card}>
-              <View style={styles.scheduleDetail_card_container}>
-                <Image
-                  source={require('../../assets/images/Sponsor1.png')}
-                  style={styles.scheduleDetil_card_image}
+              <View>
+                <Icon
+                  name="map-marker-alt"
+                  color="#4E4B66"
+                  style={{position: 'absolute', left: 18, top: 16}}
+                  size={18}
                 />
-                <Text style={styles.scheduleDetail_card_address}>
-                  Whatever street No.12, South Purwokerto
-                </Text>
-                <View
-                  style={{
-                    backgroundColor: '#DEDEDE',
-                    height: 1,
-                    width: '100%',
-                    marginTop: 23,
-                  }}></View>
               </View>
-
-              <View style={styles.scheduleDetail_card_time}>
-                <Text style={styles.scheduleDetail_card_time_title}>
-                  08:30am
-                </Text>
-                <Text style={styles.scheduleDetail_card_time_title_close}>
-                  08:30am
-                </Text>
-                <Text style={styles.scheduleDetail_card_time_title}>
-                  08:30am
-                </Text>
-                <Text style={styles.scheduleDetail_card_time_title_close}>
-                  08:30am
-                </Text>
-                <Text style={styles.scheduleDetail_card_time_title}>
-                  08:30am
-                </Text>
-                <Text style={styles.scheduleDetail_card_time_title_close}>
-                  08:30am
-                </Text>
-              </View>
-              <View style={styles.scheduleDetail_card_time_desc}>
-                <Text style={styles.sheduleDetail_card_time_desc_title}>
-                  Price
-                </Text>
-                <Text style={styles.scheduleDetail_card_time_desc_title_value}>
-                  $10.00/seat
-                </Text>
-              </View>
-
-              <TouchableHighlight
-                underlayColor="none"
-                style={styles.scheduleDetail_card_button}
-                onPress={() => navigation.navigate('Seat')}>
-                <Text style={styles.scheduleDetail_card_button_title}>
-                  Book Now
-                </Text>
-              </TouchableHighlight>
+              <Picker
+                dropdownIconColor="#4E4B66"
+                selectedValue={selectedLanguage}
+                onValueChange={value => setSelectedLanguage(value)}
+                style={{color: '#4E4B66', marginLeft: 46}}
+                mode="dialog">
+                <Picker.Item label="Set a city" enabled={false} />
+                {provinces.map(province => (
+                  <Picker.Item
+                    label={province.name}
+                    value={province.name}
+                    key={province.id}
+                  />
+                ))}
+              </Picker>
             </View>
+          </View>
+          <View>
+            <FlatList
+              data={schedules}
+              renderItem={({item}) => (
+                <View style={styles.scheduleDetail_card} key={item.id}>
+                  <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                    <Image
+                      source={
+                        item.premiere === 'Ebv.id'
+                          ? require('../../assets/images/Sponsor2.png')
+                          : item.premiere === 'Hiflix'
+                          ? require('../../assets/images/Sponsor1.png')
+                          : item.premiere === 'CineOne21'
+                          ? require('../../assets/images/Sponsor3.png')
+                          : null
+                      }
+                      style={styles.scheduleDetil_card_image}
+                    />
+                    <Text style={styles.scheduleDetail_card_address}>
+                      {item.location}
+                    </Text>
+                    <View
+                      style={{
+                        backgroundColor: '#DEDEDE',
+                        height: 1,
+                        width: '100%',
+                        marginTop: 23,
+                      }}></View>
+                  </View>
+
+                  <View style={styles.scheduleDetail_card_time}>
+                    {item.time.map(time => (
+                      <>
+                        <Text style={styles.scheduleDetail_card_time_title}>
+                          {time}
+                        </Text>
+                      </>
+                    ))}
+                  </View>
+                  <View style={styles.scheduleDetail_card_time_desc}>
+                    <Text style={styles.sheduleDetail_card_time_desc_title}>
+                      Price
+                    </Text>
+                    <Text
+                      style={styles.scheduleDetail_card_time_desc_title_value}>
+                      ${item.price},00/seat
+                    </Text>
+                  </View>
+
+                  <TouchableHighlight
+                    underlayColor="none"
+                    style={styles.scheduleDetail_card_button}
+                    onPress={() => navigation.navigate('Seat')}>
+                    <Text style={styles.scheduleDetail_card_button_title}>
+                      Book Now
+                    </Text>
+                  </TouchableHighlight>
+                </View>
+              )}
+            />
           </View>
         </View>
         {/* END SCHEDULES */}
@@ -241,6 +350,8 @@ const styles = StyleSheet.create({
     width: '70%',
   },
   homeDetail_ImageMovie: {
+    borderRadius: 24,
+    resizeMode: 'contain',
     width: 159,
     height: 244,
   },
@@ -320,8 +431,9 @@ const styles = StyleSheet.create({
   },
   scheduleDetil_card_image: {
     resizeMode: 'contain',
-    width: 77,
-    height: 29,
+    marginBottom: 5,
+    width: 100,
+    height: 39,
   },
   scheduleDetail_card_button_date: {
     backgroundColor: '#EFF0F6',
@@ -333,6 +445,7 @@ const styles = StyleSheet.create({
     color: '#4E4B66',
     marginHorizontal: 58,
     fontSize: 14,
+    marginTop: 2,
     fontWeight: '600',
   },
   scheduleDetail_rows: {
@@ -346,9 +459,12 @@ const styles = StyleSheet.create({
   scheduleDetail_card: {
     backgroundColor: '#FFFFFF',
     elevation: 8,
+    marginTop: 32,
+    marginHorizontal: 8,
+    marginVertical: 10,
     borderRadius: 16,
     paddingVertical: 40,
-    paddingHorizontal: 32,
+    paddingHorizontal: 22,
   },
   scheduleDetail_card_address: {
     textAlign: 'center',
@@ -362,13 +478,13 @@ const styles = StyleSheet.create({
   scheduleDetail_card_time: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     marginTop: 12,
   },
   scheduleDetail_card_time_title: {
     color: '#4E4B66',
     fontSize: 12,
-    marginTop: 8,
+    marginTop: 17,
     marginHorizontal: 16,
   },
   scheduleDetail_card_time_title_close: {

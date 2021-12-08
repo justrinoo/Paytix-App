@@ -19,4 +19,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     width: '100%',
   },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
 });

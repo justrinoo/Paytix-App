@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,
   ScrollView,
@@ -9,53 +9,35 @@ import {
   TouchableHighlight,
   FlatList,
 } from 'react-native';
-import {Header, Card, Footer} from '../../components';
+
+import {Header, Card, Footer, UpCommingMovie} from '../../components';
+import {useDispatch, useSelector} from 'react-redux';
+import {getAllMovie} from '../../stores/action/movie';
 
 export default function Home({navigation}) {
-  const dummyData = [
-    {
-      id: 1,
-      title: 'Spiderman HomeComing',
-      category: 'Action, Adventure, Sci-Fi',
-      image: require('../../assets/images/movies1.png'),
-    },
-    {
-      id: 2,
-      title: 'Lion King',
-      category: 'Action',
-      image: require('../../assets/images/movies2.png'),
-    },
-    {
-      id: 3,
-      title: 'Black Widow',
-      category: 'Romance',
-      image: require('../../assets/images/movies3.png'),
-    },
-    {
-      id: 4,
-      title: 'Upin & Ipin The Movie',
-      category: 'Adventure',
-      image: require('../../assets/images/movies4.png'),
-    },
-  ];
+  const [limit] = useState(5);
+  const movie = useSelector(state => state.movie);
 
-  const dateDummy = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
+  const [selectHoverMovie, setSelectHoverMovie] = useState('');
+  const [movies, setMovies] = useState(movie.movies);
+  const disptach = useDispatch();
 
-  // const [isComming] = useState('');
-  // const renderCardsMovie = ({value}) => <CardMovies title={value.title} />;
+  const getAllDataMovie = async () => {
+    try {
+      const response = await disptach(getAllMovie(limit));
+      setMovies(response.value.data.data);
+    } catch (error) {
+      new Error(error.response);
+    }
+  };
+
+  const showDescriptionMovie = id => {
+    setSelectHoverMovie(id);
+  };
+
+  useEffect(() => {
+    getAllDataMovie();
+  }, []);
 
   return (
     <ScrollView contentContainerStyle={styles.homeMain_container}>
@@ -79,92 +61,80 @@ export default function Home({navigation}) {
               view all
             </Text>
           </View>
-          <ScrollView
+
+          <FlatList
             horizontal
-            contentContainerStyle={styles.homeRows_listmovie_column_card}>
-            {dummyData.map((value, idx) => (
-              <Card index={idx} key={idx}>
+            contentContainerStyle={styles.homeRows_listmovie_column_card}
+            data={movies}
+            renderItem={({item: value}) => (
+              <Card index={value.id} key={value.id}>
                 <TouchableHighlight
                   underlayColor="none"
-                  onPress={() =>
-                    navigation.navigate('Detail', {
-                      value,
-                    })
-                  }>
-                  <Image
-                    source={value.image}
-                    style={styles.homeRows_listmovie_card_image}
-                  />
+                  onPress={() => showDescriptionMovie(value.id)}>
+                  <View
+                    style={{height: selectHoverMovie === value.id ? 320 : 220}}>
+                    <Image
+                      source={{
+                        uri: `https://paytix.herokuapp.com/uploads/movie/${value.image}`,
+                      }}
+                      style={styles.homeRows_listmovie_card_image}
+                    />
+                    {selectHoverMovie === value.id && (
+                      <View
+                        style={{
+                          flexDirection: 'column',
+                        }}>
+                        <Text
+                          style={
+                            styles.homeRows_listMovie_card_hover_title_movie
+                          }
+                          numberOfLines={1}
+                          ellipsizeMode="tail">
+                          {value.title}
+                        </Text>
+                        <Text
+                          style={
+                            styles.homeRows_listMovie_card_hover_title_category
+                          }>
+                          {value.category}
+                        </Text>
+                        <TouchableHighlight
+                          underlayColor="none"
+                          style={{
+                            borderColor: '#5F2EEA',
+                            borderWidth: 0.5,
+                            borderStyle: 'solid',
+                            paddingVertical: 5,
+                            paddingHorizontal: 40,
+                            marginTop: 33,
+                            borderRadius: 4,
+                          }}
+                          onPress={() =>
+                            navigation.navigate('Detail', {
+                              id: value.id,
+                            })
+                          }>
+                          <Text
+                            style={{
+                              color: '#5F2EEA',
+                              fontWeight: '300',
+                              fontSize: 10,
+                            }}>
+                            Details
+                          </Text>
+                        </TouchableHighlight>
+                      </View>
+                    )}
+                  </View>
                 </TouchableHighlight>
               </Card>
-            ))}
-          </ScrollView>
+            )}
+          />
         </View>
 
-        <View>
-          <View style={styles.homeRows_listUpComming_column}>
-            <Text style={styles.homeRows_listUpComming_title}>
-              Upcoming Movies
-            </Text>
-            <Text style={styles.homeRows_listUpComming_viewAll}>view all</Text>
-          </View>
-
-          <ScrollView
-            horizontal
-            contentContainerStyle={styles.homeRows_listUpCommingDate}>
-            {dateDummy.map((date, idx) => (
-              <TouchableHighlight
-                key={idx}
-                underlayColor="none"
-                style={[styles.homeRows_listUpCommingDate_button_visible]}>
-                <Text style={styles.homeRows_listUpCommingDate_title}>
-                  {date}
-                </Text>
-              </TouchableHighlight>
-            ))}
-          </ScrollView>
-
-          <ScrollView
-            horizontal
-            contentContainerStyle={
-              styles.homeRows_listUpCommingDate_column_movies
-            }>
-            {dummyData
-              .map((movie, idx) => (
-                <Card index={idx} key={idx}>
-                  <View
-                    style={
-                      styles.homeRows_listUpCommingDate_column_movies_cardBody
-                    }>
-                    <Image
-                      style={styles.homeRows_listmovie_card_image}
-                      source={movie.image}
-                    />
-                    <Text
-                      style={styles.homeRows_listMovie_card_upcomming_title}>
-                      {movie.title}
-                    </Text>
-                    <Text
-                      style={styles.homeRows_listMovie_card_upcomming_category}>
-                      {movie.category}
-                    </Text>
-                    <TouchableHighlight
-                      underlayColor="none"
-                      style={styles.homeRows_listUpCommingDate_movie_detail}
-                      onPress={() => navigation.navigate('Detail')}>
-                      <Text
-                        style={
-                          styles.homeRows_listUpCommingDate_title_movie_detail
-                        }>
-                        Details
-                      </Text>
-                    </TouchableHighlight>
-                  </View>
-                </Card>
-              ))
-              .reverse()}
-          </ScrollView>
-        </View>
+        {/* UpComming Movie */}
+        <UpCommingMovie navigation={navigation} />
+        {/* End UpComming Movie */}
 
         <View style={styles.homeRows_SubscribeMain}>
           <Text style={styles.homeRows_Subscribe_title}>
@@ -242,94 +212,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   homeRows_listmovie_card_image: {
+    resizeMode: 'contain',
+    borderRadius: 24,
     width: 122,
-    height: 185,
+    height: 205,
   },
 
-  homeRows_listUpComming_column: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 135,
-  },
-  homeRows_listUpComming_title: {
-    color: '#14142B',
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-  homeRows_listUpComming_viewAll: {
-    color: '#5F2EEA',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  homeRows_listUpCommingDate: {
-    marginTop: 24,
-    flexDirection: 'row',
-  },
-  homeRows_listUpCommingDate_title: {
-    color: '#5F2EEA',
-    fontSize: 14,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  homeRows_listUpCommingDate_button_active: {
-    width: 127,
-    marginLeft: 12,
-    backgroundColor: '#5F2EEA',
-    borderRadius: 8,
-    elevation: 7,
-    paddingHorizontal: 27,
-    paddingVertical: 12,
-  },
-  homeRows_listUpCommingDate_button_visible: {
-    width: 127,
-    marginLeft: 12,
-    borderColor: '#5F2EEA',
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderStyle: 'solid',
-    borderRadius: 8,
-    elevation: 7,
-    paddingHorizontal: 27,
-    paddingVertical: 12,
-  },
-  homeRows_listUpCommingDate_column_movies_cardBody: {
-    textAlign: 'center',
-    alignItems: 'center',
-  },
-  homeRows_listUpCommingDate_column_movies: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-  },
-  homeRows_listMovie_card_upcomming_title: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#000000',
-    marginTop: 12,
-  },
-  homeRows_listMovie_card_upcomming_category: {
-    color: '#A0A3BD',
-    fontSize: 11,
-    fontWeight: '300',
-    marginTop: 4,
-  },
-  homeRows_listUpCommingDate_movie_detail: {
-    marginTop: 24,
-    borderColor: '#5F2EEA',
-    borderWidth: 0.5,
-    borderStyle: 'solid',
-    borderRadius: 4,
-    backgroundColor: '#ffffff',
-    paddingVertical: 8,
-    paddingHorizontal: 30,
-  },
-  homeRows_listUpCommingDate_title_movie_detail: {
-    color: '#5F2EEA',
-    fontWeight: '300',
-    fontSize: 10,
-    width: 100,
-    textAlign: 'center',
-  },
   homeRows_SubscribeMain: {
     flexDirection: 'column',
     alignItems: 'center',
@@ -359,6 +247,20 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     paddingVertical: 12,
     paddingHorizontal: 24,
+  },
+  homeRows_listMovie_card_hover_title_movie: {
+    color: '#14142B',
+    fontSize: 14,
+    width: 120,
+    textAlign: 'center',
+    marginTop: 12,
+    fontWeight: '600',
+  },
+  homeRows_listMovie_card_hover_title_category: {
+    color: '#A0A3BD',
+    fontSize: 11,
+    textAlign: 'center',
+    marginTop: 4,
   },
   Subscribe_Button: {
     backgroundColor: '#5F2EEA',

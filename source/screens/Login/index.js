@@ -1,8 +1,41 @@
 import React from 'react';
-import {View, Image, StyleSheet, Text, Touch} from 'react-native';
-import {Input, Button} from '../../components';
+import {View, Image, StyleSheet, Text, ActivityIndicator} from 'react-native';
+import {Input, Button, TextError} from '../../components';
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import {useState} from 'react/cjs/react.development';
+import axios from '../../utils/axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function SignUp({navigation}) {
+  const [error, setError] = useState(false);
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleAuthLoggin = async () => {
+    try {
+      const setFormLogged = {email, password};
+      for (const valueLogged in setFormLogged) {
+        if (setFormLogged[valueLogged] === '') {
+          setError(true);
+          setMessage('Email & Password cannot be null');
+          return false;
+        }
+      }
+      setLoading(true);
+      const response = await axios.post('auth/login', setFormLogged);
+      setLoading(false);
+      await AsyncStorage.setItem('token', response.data.data.token);
+      await AsyncStorage.setItem('id', response.data.data.id);
+      navigation.navigate('HomeScreen', {
+        screen: 'Home',
+      });
+    } catch (error) {
+      setLoading(false);
+      setError(true);
+      setMessage(error.response.data.message);
+    }
+  };
   return (
     <View style={styles.auth_signupContainer}>
       <Image
@@ -14,16 +47,24 @@ export default function SignUp({navigation}) {
         childrenType="email-address"
         childrenText="Email"
         childrenPlaceHolder="Write your email"
-        childrenOnChange={() => null}
+        childrenOnChange={emailValue => setEmail(emailValue)}
       />
       <Input
-        childrenType="visible-password"
+        childrenType="default"
+        isPassword={true}
         childrenText="Password"
         childrenPlaceHolder="Write your password"
-        childrenOnChange={() => null}
+        childrenOnChange={passwordValue => setPassword(passwordValue)}
       />
-      <Button childrenOnPress={() => navigation.navigate('HomeScreen')}>
-        <Text style={styles.authButtonTitle}>Sign In</Text>
+      {error ? <TextError>{message}</TextError> : null}
+      <Button childrenOnPress={handleAuthLoggin}>
+        <Text style={styles.authButtonTitle}>
+          {loading ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            'Sign In'
+          )}
+        </Text>
       </Button>
 
       <View>
@@ -33,6 +74,14 @@ export default function SignUp({navigation}) {
             style={styles.auth_loggedLink}
             onPress={() => navigation.navigate('ForgotPassword')}>
             Reset now
+          </Text>
+        </Text>
+        <Text style={styles.auth_alreadyAccount}>
+          Don't have account?{' '}
+          <Text
+            style={styles.auth_loggedLink}
+            onPress={() => navigation.navigate('Registration')}>
+            Create Account
           </Text>
         </Text>
       </View>

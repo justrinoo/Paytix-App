@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useEffect, useState} from 'react';
 import {View, Image, StyleSheet, Text, TextInput} from 'react-native';
 
@@ -17,6 +18,14 @@ export default function Header(props) {
   const goToNextScreen = screen => {
     props.navigation.navigate(screen);
     setStatusMenu(false);
+  };
+
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('token');
+    await AsyncStorage.removeItem('id');
+    props.navigation.navigate('Auth', {
+      screen: 'Login',
+    });
   };
 
   return (
@@ -77,6 +86,14 @@ export default function Header(props) {
                 style={styles.homeMain_navigationTextLinkScreen}
                 onPress={() => goToNextScreen('Profile')}>
                 Profile
+              </Text>
+            </View>
+            <View style={styles.homeMain_navigationLine}></View>
+            <View>
+              <Text
+                style={styles.homeMain_navigationTextLinkScreen}
+                onPress={handleLogout}>
+                Logout
               </Text>
             </View>
             <View style={styles.homeMain_navigationLine}></View>

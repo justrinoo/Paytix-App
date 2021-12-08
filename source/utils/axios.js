@@ -1,11 +1,21 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
 const axiosIntance = axios.create({
-  baseURL: 'http://10.0.2.2:3001/',
+  baseURL: 'https://paytix.herokuapp.com/',
 });
 
+const tokensOut = async () => {
+  await AsyncStorage.removeItem('token');
+  await AsyncStorage.removeItem('id');
+};
+
 axiosIntance.interceptors.request.use(
-  config => {
+  async config => {
+    const token = await AsyncStorage.getItem('token');
+    config.headers = {
+      Authorization: `Bearer ${token}`,
+    };
     return config;
   },
   error => {
@@ -18,6 +28,10 @@ axiosIntance.interceptors.response.use(
     return response;
   },
   error => {
+    const jwtExpired = error.response.data.message;
+    if (error.response.data.status === 403 && jwtExpired) {
+      tokensOut();
+    }
     return Promise.reject(error);
   },
 );

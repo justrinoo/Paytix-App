@@ -1,17 +1,24 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useEffect} from 'react';
 import {View, Text, StyleSheet, Image} from 'react-native';
 
 export default function SplashScreen({navigation}) {
-  const token = '1234';
-  useEffect(() => {
+  const checkToken = async () => {
+    const token = await AsyncStorage.getItem('token');
     setTimeout(() => {
-      if (token === '1234') {
-        navigation.navigate('Auth');
-      } else {
-        return null;
-      }
-    }, 1000);
-  });
+      return token
+        ? navigation.navigate('HomeScreen', {
+            screen: 'Home',
+          })
+        : navigation.navigate('Auth', {
+            screen: 'Login',
+          });
+    }, 1500);
+  };
+
+  useEffect(() => {
+    checkToken();
+  }, []);
   return (
     <View style={styles.spalashContainer}>
       <Image
