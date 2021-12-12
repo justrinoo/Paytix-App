@@ -19,6 +19,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import axios from '../../utils/axios';
 import {getAllSchedule} from '../../stores/action/schedule';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // import Icon from 'react-native-vector-icons/FontAwesome5';
 
@@ -27,7 +28,10 @@ export default function DetailMovie({navigation, value, route}) {
   // SCHEDULE
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(2);
+  const [totalPage, setTotalPage] = useState(1);
   const [schedules, setSchedules] = useState(state.schedules);
+  const [selectedActiveTime, setSelectedActiveTime] = useState('');
+  const [ActivePagePagination, setActivePagePagination] = useState(1);
 
   const dispatch = useDispatch();
   // const movieState = useSelector(state => state.movie);
@@ -37,7 +41,7 @@ export default function DetailMovie({navigation, value, route}) {
   const [date, setDate] = useState(new Date());
   const [open, setOpen] = useState(false);
   const {id} = route.params;
-  const [selectedLanguage, setSelectedLanguage] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState('');
 
   const getMovieId = async () => {
     try {
@@ -79,10 +83,48 @@ export default function DetailMovie({navigation, value, route}) {
 
   const getListAllSchedule = async () => {
     try {
-      const response = await dispatch(getAllSchedule(page, limit));
+      const response = await dispatch(getAllSchedule(page, limit, id));
+      setTotalPage(response.value.data.pagination.totalPage);
       setSchedules(response.value.data.data);
     } catch (error) {
-      console.log('error =>', error);
+      setSchedules([]);
+    }
+  };
+
+  const findScheduleByLocation = async location => {
+    try {
+      const response = await axios.get(
+        `schedule?searchMovieId=${id}&searchLocation=${location}&page=${page}&limit=${limit}`,
+      );
+      setTotalPage(response.data.pagination.totalPage);
+      setSchedules(response.data.data);
+    } catch (error) {
+      setSchedules([]);
+      console.log(error.response);
+    }
+  };
+
+  const clickSelectedTime = (time, item) => {
+    setSelectedActiveTime(time);
+    setSchedules([item]);
+    setTotalPage(1);
+  };
+
+  const changeHandlerPagination = async num => {
+    const selectedPage = num;
+    console.log('select page =>', selectedPage);
+    setPage(selectedPage);
+    getListAllSchedule();
+    setActivePagePagination(num);
+  };
+
+  const BookMovieNow = (...rest) => {
+    if (selectedActiveTime === '') {
+      showToast('Please choose your time!');
+    } else {
+      navigation.navigate('Seat', {
+        detailOrder: rest,
+      });
     }
   };
 
@@ -90,7 +132,10 @@ export default function DetailMovie({navigation, value, route}) {
     ToastAndroid.show(message, ToastAndroid.LONG);
   };
 
-  console.log('list schedule =>', schedules);
+  let newtTotalPage = [];
+  for (let i = 1; i <= totalPage; i++) {
+    newtTotalPage.push(i);
+  }
   return (
     <ScrollView contentContainerStyle={styles.homeDetail_Container}>
       <Header navigation={navigation} />
@@ -236,15 +281,18 @@ export default function DetailMovie({navigation, value, route}) {
               </View>
               <Picker
                 dropdownIconColor="#4E4B66"
-                selectedValue={selectedLanguage}
-                onValueChange={value => setSelectedLanguage(value)}
+                selectedValue={selectedLocation}
+                onValueChange={value => {
+                  setSelectedLocation(value);
+                  findScheduleByLocation(value);
+                }}
                 style={{color: '#4E4B66', marginLeft: 46}}
                 mode="dialog">
                 <Picker.Item label="Set a city" enabled={false} />
                 {provinces.map(province => (
                   <Picker.Item
-                    label={province.name}
-                    value={province.name}
+                    label={province.name.toLowerCase()}
+                    value={province.name.toLowerCase()}
                     key={province.id}
                   />
                 ))}
@@ -252,10 +300,9 @@ export default function DetailMovie({navigation, value, route}) {
             </View>
           </View>
           <View>
-            <FlatList
-              data={schedules}
-              renderItem={({item}) => (
-                <View style={styles.scheduleDetail_card} key={item.id}>
+            {schedules.length > 0 ? (
+              schedules.map((item, idx) => (
+                <View style={styles.scheduleDetail_card} key={idx}>
                   <View style={{flexDirection: 'column', alignItems: 'center'}}>
                     <Image
                       source={
@@ -282,13 +329,21 @@ export default function DetailMovie({navigation, value, route}) {
                   </View>
 
                   <View style={styles.scheduleDetail_card_time}>
-                    {item.time.map(time => (
-                      <>
-                        <Text style={styles.scheduleDetail_card_time_title}>
-                          {time}
-                        </Text>
-                      </>
-                    ))}
+                    {item.time.map((time, idx) => {
+                      return (
+                        <View key={idx}>
+                          <Text
+                            style={
+                              selectedActiveTime === time
+                                ? styles.schedule_card_time_title_active
+                                : styles.scheduleDetail_card_time_title
+                            }
+                            onPress={() => clickSelectedTime(time, item)}>
+                            {time}
+                          </Text>
+                        </View>
+                      );
+                    })}
                   </View>
                   <View style={styles.scheduleDetail_card_time_desc}>
                     <Text style={styles.sheduleDetail_card_time_desc_title}>
@@ -303,26 +358,57 @@ export default function DetailMovie({navigation, value, route}) {
                   <TouchableHighlight
                     underlayColor="none"
                     style={styles.scheduleDetail_card_button}
-                    onPress={() => navigation.navigate('Seat')}>
+                    onPress={async () =>
+                      BookMovieNow({
+                        movieId: movie.id,
+                        scheduleId: item.id_schedule,
+                        premiere: item.premiere,
+                        nameMovie: await AsyncStorage.getItem('nameMovie'),
+                        date: new Date(date).toDateString(),
+                        dateBooking: new Date(date).toISOString().split('T')[0],
+                        time: selectedActiveTime,
+                      })
+                    }>
                     <Text style={styles.scheduleDetail_card_button_title}>
                       Book Now
                     </Text>
                   </TouchableHighlight>
                 </View>
-              )}
-            />
+              ))
+            ) : (
+              <View style={styles.ScheduleDetail_card_containerNotFound}>
+                <Text style={styles.ScheduleDetail_card_textNotFound}>
+                  Schedule not available
+                </Text>
+              </View>
+            )}
           </View>
         </View>
         {/* END SCHEDULES */}
 
         {/* PAGINATION */}
         <View style={styles.schedulePagination_container}>
-          <View style={styles.schedulePagination_Active}>
-            <Text style={styles.schedulePagination_title_active}>1</Text>
-          </View>
-          <View style={styles.schedulePagination_Default}>
-            <Text style={styles.schedulePagination_title_Default}>2</Text>
-          </View>
+          {schedules.length > 0
+            ? newtTotalPage.map(num => (
+                <TouchableHighlight
+                  style={
+                    ActivePagePagination === num
+                      ? styles.schedulePagination_Active
+                      : styles.schedulePagination_Default
+                  }
+                  underlayColor="none"
+                  onPress={() => changeHandlerPagination(num)}>
+                  <Text
+                    style={
+                      ActivePagePagination === num
+                        ? styles.schedulePagination_title_active
+                        : styles.schedulePagination_title_Default
+                    }>
+                    {num}
+                  </Text>
+                </TouchableHighlight>
+              ))
+            : null}
         </View>
         {/* END PAGINATION */}
       </View>
@@ -424,6 +510,7 @@ const styles = StyleSheet.create({
     marginBottom: 48,
   },
   scheduleDetail_title: {
+    textAlign: 'center',
     color: '#000000',
     fontSize: 18,
     fontWeight: 'bold',
@@ -487,6 +574,16 @@ const styles = StyleSheet.create({
     marginTop: 17,
     marginHorizontal: 16,
   },
+  schedule_card_time_title_active: {
+    color: '#FFFFFF',
+    padding: 3,
+    borderRadius: 8,
+    fontWeight: '600',
+    backgroundColor: '#5F2EEA',
+    fontSize: 12,
+    marginTop: 17,
+    marginHorizontal: 10,
+  },
   scheduleDetail_card_time_title_close: {
     color: '#A0A3BD',
     fontSize: 12,
@@ -533,6 +630,7 @@ const styles = StyleSheet.create({
     elevation: 5,
     paddingVertical: 10,
     paddingHorizontal: 15,
+    marginHorizontal: 5,
     width: '14%',
     height: '100%',
   },
@@ -559,5 +657,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '400',
     color: '#FFFFFF',
+  },
+  ScheduleDetail_card_textNotFound: {
+    marginTop: 20,
+    fontSize: 24,
+    color: '#F4B740',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });

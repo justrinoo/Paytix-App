@@ -8,15 +8,22 @@ import {
   TextInput,
   TouchableHighlight,
   FlatList,
+  Pressable,
+  Modal,
 } from 'react-native';
 
 import {Header, Card, Footer, UpCommingMovie} from '../../components';
 import {useDispatch, useSelector} from 'react-redux';
 import {getAllMovie} from '../../stores/action/movie';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Icon from 'react-native-vector-icons/Ionicons';
+import axios from '../../utils/axios';
 
 export default function Home({navigation}) {
   const [limit] = useState(5);
   const movie = useSelector(state => state.movie);
+  const [showModalViewAll, setShowModalViewAll] = useState(false);
+  const [search, setSearch] = useState('');
 
   const [selectHoverMovie, setSelectHoverMovie] = useState('');
   const [movies, setMovies] = useState(movie.movies);
@@ -33,6 +40,22 @@ export default function Home({navigation}) {
 
   const showDescriptionMovie = id => {
     setSelectHoverMovie(id);
+  };
+
+  const goToDetailMovie = async value => {
+    await AsyncStorage.setItem('nameMovie', value.title);
+    return navigation.navigate('Detail', {
+      id: value.id,
+    });
+  };
+
+  const searchAllMovie = async () => {
+    try {
+      const response = await axios.get(`movie?searchName=${search}`);
+      setMovies(response.data.data);
+    } catch (error) {
+      setMovies([]);
+    }
   };
 
   useEffect(() => {
@@ -57,10 +80,144 @@ export default function Home({navigation}) {
             <Text style={styles.homeRows_listmovie_column_title}>
               Now Showing
             </Text>
-            <Text style={styles.homeRows_listmovie_column_ShowAll}>
+            <Text
+              style={styles.homeRows_listmovie_column_ShowAll}
+              onPress={() => setShowModalViewAll(true)}>
               view all
             </Text>
           </View>
+
+          <Modal
+            animationType="slide"
+            transparent={false}
+            visible={showModalViewAll}
+            onRequestClose={() => {
+              setShowModalViewAll(!showModalViewAll);
+            }}>
+            <View style={styles.homeRows_modalMain}>
+              <View style={styles.homeRows_modalMainHeader}>
+                <Text style={styles.homeRows_modalMainText}>
+                  List All Movie
+                </Text>
+                <Icon
+                  name="close"
+                  size={20}
+                  color="#4E4B66"
+                  style={{textAlign: 'right'}}
+                  onPress={() => setShowModalViewAll(!showModalViewAll)}
+                />
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <TextInput
+                  style={styles.modalInputSearch}
+                  placeholder="Find your movie"
+                  placeholderTextColor="#A0A3BD"
+                  onChangeText={searchText => setSearch(searchText)}
+                />
+                <Pressable
+                  onPress={searchAllMovie}
+                  style={{
+                    backgroundColor: '#1CC8EE',
+                    borderTopLeftRadius: 0,
+                    borderTopRightRadius: 16,
+                    borderBottomRightRadius: 16,
+                    borderBottomLeftRadius: 0,
+                    padding: 14,
+                    marginTop: 20,
+                  }}>
+                  <Icon name="search" size={20} color="#FFFFFF" />
+                </Pressable>
+              </View>
+              <ScrollView
+                contentContainerStyle={
+                  styles.homeRows_listmovie_column_card_modal
+                }>
+                {movies.length > 0 ? (
+                  movies.map(value => (
+                    <View
+                      index={value.id}
+                      key={value.id}
+                      style={styles.homeRows_modalCard}>
+                      <TouchableHighlight
+                        underlayColor="none"
+                        onPress={() => showDescriptionMovie(value.id)}>
+                        <View
+                          style={{
+                            height: selectHoverMovie === value.id ? 320 : 220,
+                          }}>
+                          <Image
+                            source={{
+                              uri: `https://paytix.herokuapp.com/uploads/movie/${value.image}`,
+                            }}
+                            style={styles.homeRows_listmovie_card_image}
+                          />
+                          {selectHoverMovie === value.id && (
+                            <View
+                              style={{
+                                flexDirection: 'column',
+                              }}>
+                              <Text
+                                style={
+                                  styles.homeRows_listMovie_card_hover_title_movie
+                                }
+                                numberOfLines={1}
+                                ellipsizeMode="tail">
+                                {value.title}
+                              </Text>
+                              <Text
+                                style={
+                                  styles.homeRows_listMovie_card_hover_title_category
+                                }>
+                                {value.category}
+                              </Text>
+                              <TouchableHighlight
+                                underlayColor="none"
+                                style={{
+                                  borderColor: '#5F2EEA',
+                                  borderWidth: 0.5,
+                                  borderStyle: 'solid',
+                                  paddingVertical: 5,
+                                  paddingHorizontal: 40,
+                                  marginTop: 33,
+                                  borderRadius: 4,
+                                }}
+                                onPress={() => goToDetailMovie(value)}>
+                                <Text
+                                  style={{
+                                    color: '#5F2EEA',
+                                    fontWeight: '300',
+                                    fontSize: 10,
+                                  }}>
+                                  Details
+                                </Text>
+                              </TouchableHighlight>
+                            </View>
+                          )}
+                        </View>
+                      </TouchableHighlight>
+                    </View>
+                  ))
+                ) : (
+                  <View>
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        color: '#ED2E7E',
+                        fontWeight: 'bold',
+                        marginTop: 10,
+                      }}>
+                      Movie not found
+                    </Text>
+                  </View>
+                )}
+              </ScrollView>
+            </View>
+          </Modal>
 
           <FlatList
             horizontal
@@ -109,11 +266,7 @@ export default function Home({navigation}) {
                             marginTop: 33,
                             borderRadius: 4,
                           }}
-                          onPress={() =>
-                            navigation.navigate('Detail', {
-                              id: value.id,
-                            })
-                          }>
+                          onPress={() => goToDetailMovie(value)}>
                           <Text
                             style={{
                               color: '#5F2EEA',
@@ -211,6 +364,10 @@ const styles = StyleSheet.create({
   homeRows_listmovie_column_card: {
     flexDirection: 'row',
   },
+  homeRows_listmovie_column_card_modal: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
   homeRows_listmovie_card_image: {
     resizeMode: 'contain',
     borderRadius: 24,
@@ -282,5 +439,44 @@ const styles = StyleSheet.create({
     marginTop: 32,
     lineHeight: 22,
     marginBottom: 48,
+  },
+  homeRows_modalMain: {
+    flex: 1,
+    backgroundColor: '#FCFCFC',
+    paddingVertical: 24,
+    paddingHorizontal: 24,
+  },
+  homeRows_modalMainHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  homeRows_modalMainText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#14142B',
+  },
+  homeRows_modalCard: {
+    borderRadius: 16,
+    backgroundColor: '#ffffff',
+    borderWidth: 0.5,
+    borderStyle: 'solid',
+    padding: 11,
+    marginHorizontal: 5,
+    marginVertical: 29,
+    borderColor: '#DEDEDE',
+  },
+  modalInputSearch: {
+    color: '#6E7191',
+    marginTop: 20,
+    width: '88%',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 0,
+    borderBottomRightRadius: 0,
+    borderBottomLeftRadius: 16,
+    borderColor: '#DEDEDE',
+    borderWidth: 1,
+    borderStyle: 'solid',
+    paddingHorizontal: 18,
   },
 });

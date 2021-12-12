@@ -1,7 +1,19 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, Text, ScrollView, StyleSheet, Image} from 'react-native';
 import {Footer, Header} from '../../components';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useSelector} from 'react-redux';
 export default function Ticket({navigation}) {
+  const [title, setTitle] = useState('');
+  const dataTicket = useSelector(state => state.user);
+  const setDetailTicketBooking = dataTicket.setDataTicket;
+  const getNameMovie = async () => {
+    const nameMovie = await AsyncStorage.getItem('title');
+    setTitle(nameMovie);
+  };
+  useEffect(() => {
+    getNameMovie();
+  }, []);
   return (
     <ScrollView contentContainerStyle={styles.ticket_container}>
       <Header navigation={navigation} />
@@ -47,10 +59,10 @@ export default function Ticket({navigation}) {
                 style={styles.ticket_card_desc_column_title_value_movie}
                 numberOfLines={1}
                 ellipsizeMode="tail">
-                Spiderman HomeComing
+                {title}
               </Text>
               <Text style={styles.ticket_card_desc_column_title_value}>
-                PG-13
+                PG-{setDetailTicketBooking.id.substring(1, 3)}
               </Text>
             </View>
             <View style={styles.ticket_card_desc_column}>
@@ -59,10 +71,12 @@ export default function Ticket({navigation}) {
             </View>
             <View style={styles.ticket_card_desc_column}>
               <Text style={styles.ticket_card_desc_column_title_value}>
-                07 Jul
+                {new Date(setDetailTicketBooking.dateBooking).toDateString()}
               </Text>
               <Text style={styles.ticket_card_desc_column_title_value}>
-                2:00pm
+                {setDetailTicketBooking.timeBooking >= 18
+                  ? `${setDetailTicketBooking.timeBooking.substring(0, 5)}pm`
+                  : `${setDetailTicketBooking.timeBooking.substring(0, 5)}am`}
               </Text>
             </View>
             <View style={styles.ticket_card_desc_column}>
@@ -74,16 +88,24 @@ export default function Ticket({navigation}) {
                 style={styles.ticket_card_desc_column_title_value}
                 numberOfLines={1}
                 ellipsizeMode="tail">
-                3 pcs
+                {setDetailTicketBooking.seat.length} pcs
               </Text>
-              <Text style={styles.ticket_card_desc_column_title_value}>
-                C4, C5, C6
+              <Text
+                style={styles.ticket_card_desc_column_title_value_seat}
+                numberOfLines={1}
+                ellipsizeMode="tail">
+                {setDetailTicketBooking.seat.join(', ')}
               </Text>
             </View>
           </View>
           <View style={styles.ticket_card_desc_row_total}>
             <Text style={styles.ticket_card_desc_row_total_title}>Total</Text>
-            <Text style={styles.ticket_card_desc_row_total_value}>$30.00</Text>
+            <Text style={styles.ticket_card_desc_row_total_value}>
+              Rp
+              {new Intl.NumberFormat('id-ID').format(
+                setDetailTicketBooking.totalPayment,
+              )}
+            </Text>
           </View>
         </View>
       </View>
@@ -157,13 +179,20 @@ const styles = StyleSheet.create({
     color: '#14142B',
     fontWeight: '600',
     fontSize: 14,
-    width: '50%',
+    width: '60%',
   },
   ticket_card_desc_column_title_value: {
     color: '#14142B',
     fontWeight: '600',
     fontSize: 14,
     marginTop: 5,
+  },
+  ticket_card_desc_column_title_value_seat: {
+    color: '#14142B',
+    fontWeight: '600',
+    fontSize: 14,
+    marginTop: 5,
+    width: 80,
   },
   ticket_card_desc_row_total: {
     flexDirection: 'row',

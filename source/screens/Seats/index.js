@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Text,
   View,
@@ -6,17 +6,96 @@ import {
   ScrollView,
   Image,
   TouchableHighlight,
+  Alert,
 } from 'react-native';
-import {Header, Footer} from '../../components';
+import {Header, Footer, ListSeats} from '../../components';
 
 import Icon from 'react-native-vector-icons/FontAwesome5';
-export default function Seats({navigation}) {
+import IconClose from 'react-native-vector-icons/Ionicons';
+import {getUser} from '../../stores/action/user';
+import axios from '../../utils/axios';
+import {useSelector, useDispatch} from 'react-redux';
+export default function Seats({navigation, route}) {
+  const dispatch = useDispatch();
+  const [questionSeat, setQuestionSeat] = useState(false);
+  const [userSeats, setUserSeats] = useState([]);
+  const [soldSeat, setSoldSeat] = useState([]);
+  const user = useSelector(state => state.user);
+  const detailUser = user.users[0];
+  const {detailOrder} = route.params;
+
+  const orderDetail = detailOrder[0];
+
+  const {date, dateBooking, movieId, nameMovie, premiere, scheduleId, time} =
+    orderDetail;
+
   const listAlphabet = ['A', 'B', 'C', 'D', 'E', 'F'];
 
-  let seats = [];
-  for (let i = 1; i <= 36; i++) {
-    seats.push(i);
-  }
+  const userBookSoldSeat = async () => {
+    try {
+      const response = await axios.get(
+        `booking/seat?scheduleId=${scheduleId}&movieId=${movieId}&dateBooking=${dateBooking}&timeBooking=${time}`,
+      );
+      const seat = response.data.data.map(value => value.seat);
+      setSoldSeat(seat);
+    } catch (error) {
+      new Error(error);
+    }
+  };
+
+  useEffect(() => {
+    dispatch(getUser());
+    userBookSoldSeat();
+  }, []);
+
+  const chooseSeats = seat => {
+    if (userSeats.includes(seat)) {
+      const cancelSeat = userSeats.filter(value => value !== seat);
+      setUserSeats(cancelSeat);
+    } else if (userSeats.length === 10) {
+      Alert.alert('Message', 'Are you sure you booked more than 10 seats?', [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+          onPress: () => {
+            setUserSeats([...userSeats]);
+          },
+        },
+        {
+          text: 'OK',
+          onPress: () => {
+            setUserSeats([...userSeats, seat]);
+          },
+        },
+      ]);
+    } else {
+      setUserSeats([...userSeats, seat]);
+    }
+  };
+  const goToCheckout = () => {
+    navigation.navigate('Payment', {
+      userId: detailUser.id, // from redux
+      movieId: movieId,
+      nameMovie: nameMovie,
+      scheduleId: scheduleId,
+      dateBooking: dateBooking,
+      timeBooking: time,
+      seat: userSeats,
+      totalPayment: `${
+        premiere === 'Hiflix'
+          ? userSeats.length * 50000
+          : premiere === 'Ebv.id'
+          ? userSeats.length * 35000
+          : premiere === 'CineOne21'
+          ? userSeats.length * 75000
+          : null
+      }`,
+    });
+  };
+
+  const ClearSeats = () => {
+    setUserSeats([]);
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.Seat_main}>
@@ -33,27 +112,16 @@ export default function Seats({navigation}) {
             }}></View>
 
           <View style={styles.Seat_SeatsContainer}>
-            <View style={styles.Seat_ListSeats}>
-              <View style={styles.Seat_ListSeats_column}>
-                {seats.map((seat, idx) => (
-                  <View
-                    key={idx}
-                    style={[
-                      styles.Seat_ListSeats_choose_available,
-                      styles.Seat_ListSeats_choose_selected,
-                      styles.Seat_ListSeats_choose_sold,
-                    ]}></View>
-                ))}
+            {listAlphabet.map((value, idx) => (
+              <View key={idx}>
+                <ListSeats
+                  keyAlphabet={value}
+                  selectedSeats={userSeats}
+                  soldSeats={soldSeat}
+                  chooseSeats={chooseSeats}
+                />
               </View>
-              <View style={styles.Seat_ListSeats_column_space}></View>
-              <View style={styles.Seat_ListSeats_column}>
-                {seats.map((seat, idx) => (
-                  <View
-                    key={idx}
-                    style={styles.Seat_ListSeats_choose_available}></View>
-                ))}
-              </View>
-            </View>
+            ))}
           </View>
 
           {/* SEAT */}
@@ -134,25 +202,29 @@ export default function Seats({navigation}) {
           <View style={styles.OrderInfo_Card}>
             <View style={styles.OrderInfo_Card_Rows}>
               <Image
-                source={require('../../assets/images/Sponsor3.png')}
+                source={
+                  premiere === 'Ebv.id'
+                    ? require('../../assets/images/Sponsor2.png')
+                    : premiere === 'Hiflix'
+                    ? require('../../assets/images/Sponsor1.png')
+                    : premiere === 'CineOne21'
+                    ? require('../../assets/images/Sponsor3.png')
+                    : null
+                }
                 style={styles.OrderInfo_Image}
               />
-              <Text style={styles.OrderInfo_title_schedule}>
-                CineOne21 Cinema
-              </Text>
-              <Text style={styles.OrderInfo_title_movie}>
-                Spider-Man: Homecoming
-              </Text>
+              <Text style={styles.OrderInfo_title_schedule}>{premiere}</Text>
+              <Text style={styles.OrderInfo_title_movie}>{nameMovie}</Text>
             </View>
             <View style={styles.OrderInfo_desc}>
               <View style={styles.OrderInfo_desc_row}>
                 <View>
-                  <Text style={styles.orderInfo_desc_title}>
-                    Tuesday, 07 July 2020
-                  </Text>
+                  <Text style={styles.orderInfo_desc_title}>{date}</Text>
                 </View>
                 <View style={styles.orderInfo_desc_title_value}>
-                  <Text style={styles.orderInfo_desc_title_value}>02:00pm</Text>
+                  <Text style={styles.orderInfo_desc_title_value}>
+                    {time >= 18 ? `${time}pm` : `${time}am`}
+                  </Text>
                 </View>
               </View>
               <View style={styles.OrderInfo_desc_row}>
@@ -162,16 +234,39 @@ export default function Seats({navigation}) {
                   </Text>
                 </View>
                 <View>
-                  <Text style={styles.orderInfo_desc_title_value}>$10</Text>
+                  <Text style={styles.orderInfo_desc_title_value}>
+                    Rp{' '}
+                    {premiere === 'Hiflix'
+                      ? new Intl.NumberFormat('id-ID').format('50000')
+                      : premiere === 'Ebv.id'
+                      ? new Intl.NumberFormat('id-ID').format('35000')
+                      : premiere === 'CineOne21'
+                      ? new Intl.NumberFormat('id-ID').format('75000')
+                      : null}
+                  </Text>
                 </View>
               </View>
               <View style={styles.OrderInfo_desc_row}>
                 <View>
                   <Text style={styles.orderInfo_desc_title}>Seat choosed</Text>
                 </View>
-                <View>
-                  <Text style={styles.orderInfo_desc_title_value}>
-                    C4, C5, C6
+                <View style={{position: 'relative'}}>
+                  {userSeats.length > 0 ? (
+                    <View>
+                      <IconClose
+                        onPress={ClearSeats}
+                        name="close"
+                        size={20}
+                        color="#14142B"
+                        style={{position: 'absolute', left: -18, top: 2}}
+                      />
+                    </View>
+                  ) : null}
+                  <Text
+                    style={styles.orderInfo_desc_title_value_seat}
+                    numberOfLines={1}
+                    ellipsizeMode="tail">
+                    {userSeats.length > 0 ? userSeats.join(', ') : '-'}
                   </Text>
                 </View>
               </View>
@@ -187,8 +282,18 @@ export default function Seats({navigation}) {
                 <Text style={styles.orderInfo_desc_result_title}>
                   Total Payment
                 </Text>
-                <Text style={styles.orderInfo_desc_result_title_value}>
-                  $30
+                <Text style={styles.orderInfo_desc_result_title_value_payment}>
+                  {userSeats.length > 0
+                    ? `Rp${new Intl.NumberFormat('id-ID', {}).format(
+                        premiere === 'Hiflix'
+                          ? userSeats.length * 50000
+                          : premiere === 'Ebv.id'
+                          ? userSeats.length * 35000
+                          : premiere === 'CineOne21'
+                          ? userSeats.length * 75000
+                          : null,
+                      )}`
+                    : '-'}
                 </Text>
               </View>
             </View>
@@ -196,8 +301,13 @@ export default function Seats({navigation}) {
 
           <TouchableHighlight
             underlayColor="none"
-            style={styles.orderInfo_button}
-            onPress={() => navigation.navigate('Payment')}>
+            style={
+              userSeats.length === 0
+                ? styles.disabledButton
+                : styles.orderInfo_button
+            }
+            disabled={userSeats.length === 0 && true}
+            onPress={goToCheckout}>
             <Text style={styles.orderInfo_button_title}>Checkout Now</Text>
           </TouchableHighlight>
         </View>
@@ -269,49 +379,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginLeft: 10,
   },
-  Seat_ListSeats: {
-    flexDirection: 'row',
-    width: '100%',
-    justifyContent: 'space-between',
-  },
-  Seat_ListSeats_column: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    width: '53%',
-  },
-  Seat_ListSeats_column_space: {
-    width: '2%',
-  },
-  Seat_SeatsContainer: {
-    marginTop: 16,
-  },
-  Seat_ListSeats_choose_available: {
-    backgroundColor: '#D6D8E7',
-    width: 14,
-    height: 14,
-    borderRadius: 2,
-    marginHorizontal: 3,
-    marginTop: 6,
-    marginVertical: 2,
-  },
-  Seat_ListSeats_choose_sold: {
-    backgroundColor: '#6E7191',
-    width: 14,
-    height: 14,
-    borderRadius: 2,
-    marginHorizontal: 3,
-    marginTop: 6,
-    marginVertical: 2,
-  },
-  Seat_ListSeats_choose_selected: {
-    backgroundColor: '#5F2EEA',
-    width: 14,
-    height: 14,
-    borderRadius: 2,
-    marginHorizontal: 3,
-    marginTop: 6,
-    marginVertical: 2,
-  },
 
   // ORDER INFO
   OrderInfo_container: {
@@ -370,6 +437,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
   },
+  orderInfo_desc_title_value_seat: {
+    marginTop: 11,
+    width: 85,
+    color: '#14142B',
+    fontWeight: '600',
+    fontSize: 14,
+  },
   orderInfo_desc_result: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -387,6 +461,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 20,
   },
+  orderInfo_desc_result_title_value_payment: {
+    color: '#5F2EEA',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 20,
+  },
   orderInfo_button: {
     backgroundColor: '#5F2EEA',
     width: '100%',
@@ -399,5 +479,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '700',
     fontSize: 16,
+  },
+  disabledButton: {
+    backgroundColor: '#5F2EEA',
+    opacity: 0.5,
+    width: '100%',
+    marginTop: 90,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    borderRadius: 16,
   },
 });

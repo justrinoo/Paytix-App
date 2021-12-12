@@ -3,6 +3,7 @@ import React, {useEffect, useState} from 'react';
 import {View, Image, StyleSheet, Text, TextInput} from 'react-native';
 
 import Icon from 'react-native-vector-icons/Ionicons';
+import axios from '../../utils/axios';
 
 export default function Header(props) {
   const [statusMenu, setStatusMenu] = useState(false);
@@ -21,6 +22,7 @@ export default function Header(props) {
   };
 
   const handleLogout = async () => {
+    setStatusMenu(false);
     await AsyncStorage.removeItem('token');
     await AsyncStorage.removeItem('id');
     props.navigation.navigate('Auth', {
@@ -76,20 +78,18 @@ export default function Header(props) {
             <View>
               <Text
                 style={styles.homeMain_navigationTextLinkScreen}
-                onPress={() => goToNextScreen('Payment')}>
-                Payment
-              </Text>
-            </View>
-            <View style={styles.homeMain_navigationLine}></View>
-            <View>
-              <Text
-                style={styles.homeMain_navigationTextLinkScreen}
                 onPress={() => goToNextScreen('Profile')}>
                 Profile
               </Text>
             </View>
             <View style={styles.homeMain_navigationLine}></View>
             <View>
+              <Icon
+                name="log-out"
+                size={20}
+                color="#000000"
+                style={{position: 'absolute', left: 130}}
+              />
               <Text
                 style={styles.homeMain_navigationTextLinkScreen}
                 onPress={handleLogout}>

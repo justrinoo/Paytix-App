@@ -12,7 +12,7 @@ target 'TickitzMobile' do
     :hermes_enabled => false
   )
 
-  pod 'RNCPicker', :path => '../node_modules/@react-native-picker/picker'
+  pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
 
   target 'TickitzMobileTests' do
     inherit! :complete

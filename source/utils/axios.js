@@ -1,8 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import {BASE_URL} from '@env';
+
+console.log('your base url =>', BASE_URL);
 
 const axiosIntance = axios.create({
-  baseURL: 'https://paytix.herokuapp.com/',
+  baseURL: BASE_URL,
 });
 
 const tokensOut = async () => {

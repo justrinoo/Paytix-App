@@ -6,6 +6,9 @@ export default function InputComponent({
   childrenOnChange,
   childrenText,
   isPassword,
+  isValue,
+  isDisabled,
+  childrenValue,
 }) {
   return (
     <>
@@ -15,9 +18,11 @@ export default function InputComponent({
           <TextInput
             keyboardType={childrenType}
             style={[styles.inputComponent]}
+            editable={isDisabled ? false : true}
             placeholderTextColor="#A0A3BD"
             placeholder={childrenPlaceHolder}
             onChangeText={childrenOnChange}
+            value={isValue ? childrenValue : null}
             secureTextEntry={isPassword ? true : null}
           />
         </View>

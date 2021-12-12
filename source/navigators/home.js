@@ -6,6 +6,7 @@ import Seats from '../screens/Seats';
 import Payment from '../screens/Payment';
 import Ticket from '../screens/Ticket';
 import Profile from '../screens/Profile';
+import WebViewMidtrans from '../screens/WebViewMidtrans';
 
 const Stack = createNativeStackNavigator();
 
@@ -30,6 +31,11 @@ export default function HomeNavigator() {
       <Stack.Screen
         name="Payment"
         component={Payment}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="MidtransScreen"
+        component={WebViewMidtrans}
         options={{headerShown: false}}
       />
       <Stack.Screen
