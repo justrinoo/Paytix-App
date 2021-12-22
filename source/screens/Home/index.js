@@ -152,7 +152,7 @@ export default function Home({navigation}) {
                           }}>
                           <Image
                             source={{
-                              uri: `https://paytix.herokuapp.com/uploads/movie/${value.image}`,
+                              uri: `https://backend-rino.fwebdev2.xyz/uploads/movie/${value.image}`,
                             }}
                             style={styles.homeRows_listmovie_card_image}
                           />
@@ -232,7 +232,7 @@ export default function Home({navigation}) {
                     style={{height: selectHoverMovie === value.id ? 320 : 220}}>
                     <Image
                       source={{
-                        uri: `https://paytix.herokuapp.com/uploads/movie/${value.image}`,
+                        uri: `https://backend-rino.fwebdev2.xyz/uploads/movie/${value.image}`,
                       }}
                       style={styles.homeRows_listmovie_card_image}
                     />
@@ -306,7 +306,7 @@ export default function Home({navigation}) {
           </TouchableHighlight>
 
           <Text style={styles.Subscribe_Desc}>
-            By joining you as a Tickitz member, we will always send you the
+            By joining you as a Paytix member, we will always send you the
             latest updates via email .
           </Text>
         </View>

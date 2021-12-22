@@ -33,20 +33,18 @@ export default function Profile({navigation}) {
   const [popUpSettings, setPopUpSettings] = useState(false);
   const [popUpModalQuestion, setPopUpModalQuestion] = useState(false);
   const [menuActive, setMenuActive] = useState('Detail');
-  const user = useSelector(state => state.user);
-  const dispatch = useDispatch(getUser());
+  const [users, setUsers] = useState([]);
+  const dispatch = useDispatch();
   const [selectOptionUpdate, setSelectOptionUpdate] = useState('');
-
-  const userInformation = user.users[0];
-
+  console.log('user =>', users.firstName);
   const [orderHistories, setOrderHistories] = useState([]);
   const [dataBooking, setDataBooking] = useState([]);
 
   // ACCOUNT SETTINGS STATE
-  const [firstName, setFirstName] = useState(userInformation.firstName);
-  const [lastName, setLastName] = useState(userInformation.lastName);
-  const [email, setEmail] = useState(userInformation.email);
-  const [phoneNumber, setPhoneNumber] = useState(userInformation.phoneNumber);
+  const [firstName, setFirstName] = useState(users.firstName);
+  const [lastName, setLastName] = useState(users.lastName);
+  const [email, setEmail] = useState(users.email);
+  const [phoneNumber, setPhoneNumber] = useState(users.phoneNumber);
 
   const updateDetailInformation = async () => {
     try {
@@ -59,7 +57,7 @@ export default function Profile({navigation}) {
         'user/update-profile',
         setDataUpdateDetailInformation,
       );
-
+      await dispatch(getUser());
       setSelectOptionUpdate('');
       Toast.show({
         type: 'success',
@@ -67,7 +65,6 @@ export default function Profile({navigation}) {
         text2: response.data.message,
         visibilityTime: 10000,
       });
-      dispatch(getUser());
     } catch (error) {
       console.log('error update profile =>', error.response);
     }
@@ -116,19 +113,20 @@ export default function Profile({navigation}) {
     }
   };
 
-  // const getOrderHistoryUserByBookingId = async bookindId => {
-  //   try {
-  //     const response = await axios.get(`booking/booking-id/${bookindId}`);
-  //     setDataBooking([response.data.data]);
-  //     console.log('data booking =>', dataBooking);
-  //   } catch (error) {
-  //     new Error(error.response);
-  //   }
-  // };
+  const getDataUser = async () => {
+    try {
+      const response = await axios.get('user');
+      setUsers(response.data.data[0]);
+    } catch (error) {
+      setUsers([]);
+      new Error(error.response);
+    }
+  };
 
   useEffect(() => {
-    getOrderHistoryUserBuyTicket();
+    getDataUser();
     dispatch(getUser());
+    getOrderHistoryUserBuyTicket();
   }, []);
 
   const changeMenuScreen = menu => {
@@ -196,7 +194,7 @@ export default function Profile({navigation}) {
       const response = await axios.patch(`user/update-image`, formData);
       Toast.show({
         type: 'success',
-        text1: `Hello ${userInformation.firstName} ${userInformation.lastName}`,
+        text1: `Hello ${users.firstName} ${users.lastName}`,
         text2: response.data.message,
         position: 'top',
       });
@@ -210,7 +208,7 @@ export default function Profile({navigation}) {
     } catch (error) {
       Toast.show({
         type: 'error',
-        text1: `Hello ${userInformation.firstName} ${userInformation.lastName}`,
+        text1: `Hello ${users.firstName} ${users.lastName}`,
         text2: error.response.data.message,
         position: 'top',
       });
@@ -222,7 +220,6 @@ export default function Profile({navigation}) {
     setSelectOptionUpdate(text);
   };
 
-  console.log('data booking =>', dataBooking);
   return (
     <ScrollView style={styles.profile_main}>
       <Header navigation={navigation} />
@@ -409,17 +406,17 @@ export default function Profile({navigation}) {
               <View style={styles.profile_card_body_information}>
                 <Image
                   source={{
-                    uri: userInformation.image
-                      ? `https://paytix.herokuapp.com/uploads/user/${userInformation.image}`
+                    uri: users.image
+                      ? `https://backend-rino.fwebdev2.xyz/uploads/user/${users.image}`
                       : 'https://inspektorat.kotawaringinbaratkab.go.id/public/uploads/user/default-user-imge.jpeg',
                   }}
                   style={styles.profile_card_body_information_image}
                 />
                 <Text style={styles.profile_card_body_information_title}>
-                  {userInformation.firstName} {userInformation.lastName}
+                  {users.firstName} {users.lastName}
                 </Text>
                 <Text style={styles.profile_card_body_information_title_job}>
-                  {userInformation.email}
+                  {users.email}
                 </Text>
               </View>
             </View>
@@ -555,10 +552,11 @@ export default function Profile({navigation}) {
           </>
         ) : (
           <ScrollView>
-            {orderHistories.map(item => (
-              <View style={styles.profile_card_orderHistory} key={item.id}>
-                <View style={styles.profile_card_orderHistory_body}>
-                  {/* <Image
+            {orderHistories.length > 0 ? (
+              orderHistories.map(item => (
+                <View style={styles.profile_card_orderHistory} key={item.id}>
+                  <View style={styles.profile_card_orderHistory_body}>
+                    {/* <Image
                       source={
                         item === 'Ebv.id'
                           ? require('../../assets/images/Sponsor2.png')
@@ -570,43 +568,54 @@ export default function Profile({navigation}) {
                       }
                       style={styles.profile_card_orderHistory_image}
                     /> */}
-                  <Text style={styles.profile_card_orderHistory_date}>
-                    {new Date(item.dateBooking).toDateString()} -{' '}
-                    {item.timeBooking.substring(0, 5) >= 18
-                      ? `${item.timeBooking.substring(0, 5)}pm`
-                      : `${item.timeBooking.substring(0, 5)}am`}
-                  </Text>
-                  <Text style={styles.profile_card_orderHistory_movie}>
-                    {item.title}
-                  </Text>
+                    <Text style={styles.profile_card_orderHistory_date}>
+                      {new Date(item.dateBooking).toDateString()} -{' '}
+                      {item.timeBooking.substring(0, 5) >= 18
+                        ? `${item.timeBooking.substring(0, 5)}pm`
+                        : `${item.timeBooking.substring(0, 5)}am`}
+                    </Text>
+                    <Text style={styles.profile_card_orderHistory_movie}>
+                      {item.title}
+                    </Text>
+                  </View>
+                  <View
+                    style={{
+                      borderColor: '#DEDEDE',
+                      borderWidth: 1,
+                      borderStyle: 'solid',
+                      marginBottom: 24,
+                    }}></View>
+                  <TouchableHighlight
+                    underlayColor="none"
+                    onPress={() =>
+                      item.statusUsed === 'active'
+                        ? handlerUsedTicket(item.id, item.title)
+                        : null
+                    }
+                    style={
+                      item.statusUsed === 'active'
+                        ? styles.profile_card_orderHistory_button_active
+                        : styles.profile_card_orderHistory_button_used
+                    }>
+                    <Text style={styles.profile_card_orderHistory_button_title}>
+                      {item.statusUsed === 'active'
+                        ? 'Ticket in active'
+                        : 'Ticket Already used'}
+                    </Text>
+                  </TouchableHighlight>
                 </View>
-                <View
-                  style={{
-                    borderColor: '#DEDEDE',
-                    borderWidth: 1,
-                    borderStyle: 'solid',
-                    marginBottom: 24,
-                  }}></View>
-                <TouchableHighlight
-                  underlayColor="none"
-                  onPress={() =>
-                    item.statusUsed === 'active'
-                      ? handlerUsedTicket(item.id, item.title)
-                      : null
-                  }
-                  style={
-                    item.statusUsed === 'active'
-                      ? styles.profile_card_orderHistory_button_active
-                      : styles.profile_card_orderHistory_button_used
-                  }>
-                  <Text style={styles.profile_card_orderHistory_button_title}>
-                    {item.statusUsed === 'active'
-                      ? 'Ticket in active'
-                      : 'Ticket Already used'}
-                  </Text>
-                </TouchableHighlight>
-              </View>
-            ))}
+              ))
+            ) : (
+              <Text
+                style={{
+                  fontSize: 28,
+                  color: '#000000',
+                  textAlign: 'center',
+                  marginTop: 20,
+                }}>
+                Order is Empty.
+              </Text>
+            )}
           </ScrollView>
         )}
       </View>

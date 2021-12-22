@@ -98,7 +98,7 @@ export default function Header(props) {
             </View>
             <View style={styles.homeMain_navigationLine}></View>
             <Text style={styles.homeMain_navigationTextLinkScreenFooter}>
-              &copy; 2021 Tickitz. All Rights Reserved.
+              &copy; 2021 Paytix. All Rights Reserved.
             </Text>
           </View>
         </View>
@@ -118,8 +118,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 24,
   },
   homeMain_BrandLogo: {
-    width: 86,
-    height: 24,
+    width: 110,
+    height: 34,
   },
   homeMain_navigationContainer: {
     position: 'relative',

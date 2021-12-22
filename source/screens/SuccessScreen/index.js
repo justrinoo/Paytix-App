@@ -1,8 +1,16 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {View, Image, Text, StyleSheet, TouchableHighlight} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Notification from '../Notification/notif';
 export default function SuccessScreen(props) {
   const user = props.route.params.fullName;
+
+  useEffect(() => {
+    Notification.verificationEmailAccount(
+      `Hello ${user}`,
+      "Don't Forget to Activate Your Email! Oke!",
+    );
+  }, []);
   // const dummyUser = 'rino satya';
   return (
     <View style={styles.successContainer}>

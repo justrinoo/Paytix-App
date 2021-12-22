@@ -117,7 +117,7 @@ export default function UpCommingMovie({navigation}) {
                   <Image
                     style={styles.homeRows_listmovie_card_image}
                     source={{
-                      uri: `https://paytix.herokuapp.com/uploads/movie/${item.image}`,
+                      uri: `https://backend-rino.fwebdev2.xyz/uploads/movie/${item.image}`,
                     }}
                   />
                   <Text style={styles.homeRows_listMovie_card_upcomming_title}>

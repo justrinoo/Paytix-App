@@ -67,7 +67,7 @@ export default function index() {
 
         <View style={styles.homeRows_footer_copyright}>
           <Text style={styles.homeRows_footer_copyright_title}>
-            &copy; 2021 Tickitz. All Rights Reserved.
+            &copy; 2021 Paytix. All Rights Reserved.
           </Text>
         </View>
       </View>

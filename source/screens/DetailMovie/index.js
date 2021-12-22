@@ -146,7 +146,7 @@ export default function DetailMovie({navigation, value, route}) {
               <Image
                 style={styles.homeDetail_ImageMovie}
                 source={{
-                  uri: `https://paytix.herokuapp.com/uploads/movie/${movie.image}`,
+                  uri: `https://backend-rino.fwebdev2.xyz/uploads/movie/${movie.image}`,
                 }}
               />
             </View>
