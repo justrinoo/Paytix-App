@@ -25,9 +25,8 @@ BASE_URL=yourApiBaseUrl
 
 ## Build With
 - [NodeJs] - Runtime Javascript environment for the backend
-- [React Js] - UI Library for the frontend
 - [React Native] - UI Library for cross platform
-- [Redux-Persist] - for handle redux state management
+- [Redux] - state management global
 - [Vercel] - Hosting for production
 - etc.
 
