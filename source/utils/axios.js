@@ -5,7 +5,7 @@ import {BASE_URL} from '@env';
 console.log('your base url =>', BASE_URL);
 
 const axiosIntance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: 'https://backend-rino.fwebdev2.xyz/',
 });
 
 const tokensOut = async () => {

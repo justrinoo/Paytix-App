@@ -23,29 +23,29 @@ import axios from '../../utils/axios';
 import {getUser, setDataTicketBooking} from '../../stores/action/user';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useDispatch, useSelector} from 'react-redux';
+import Notification from '../Notification/notif';
 export default function Profile({navigation}) {
   // const [image, setImage] = useState(null);
   const [formImage, setFormImage] = useState({
     image: '',
   });
   const [loading, setLoading] = useState(false);
-
   const [popUpSettings, setPopUpSettings] = useState(false);
   const [popUpModalQuestion, setPopUpModalQuestion] = useState(false);
   const [menuActive, setMenuActive] = useState('Detail');
+  const user = useSelector(state => state.user);
+  const userInformation = user.users[0];
   const [users, setUsers] = useState([]);
   const dispatch = useDispatch();
   const [selectOptionUpdate, setSelectOptionUpdate] = useState('');
-  console.log('user =>', users.firstName);
   const [orderHistories, setOrderHistories] = useState([]);
   const [dataBooking, setDataBooking] = useState([]);
 
   // ACCOUNT SETTINGS STATE
-  const [firstName, setFirstName] = useState(users.firstName);
-  const [lastName, setLastName] = useState(users.lastName);
-  const [email, setEmail] = useState(users.email);
-  const [phoneNumber, setPhoneNumber] = useState(users.phoneNumber);
-
+  const [firstName, setFirstName] = useState(userInformation.firstName);
+  const [lastName, setLastName] = useState(userInformation.lastName);
+  const [email, setEmail] = useState(userInformation.email);
+  const [phoneNumber, setPhoneNumber] = useState(userInformation.phoneNumber);
   const updateDetailInformation = async () => {
     try {
       const setDataUpdateDetailInformation = {
@@ -57,7 +57,7 @@ export default function Profile({navigation}) {
         'user/update-profile',
         setDataUpdateDetailInformation,
       );
-      await dispatch(getUser());
+      getDataUser();
       setSelectOptionUpdate('');
       Toast.show({
         type: 'success',
@@ -124,9 +124,20 @@ export default function Profile({navigation}) {
   };
 
   useEffect(() => {
+    async function getTicketActive() {
+      const response = await axios.get('booking/user-id');
+      const ticketActive = response.data.data.filter(
+        value => value.statusUsed === 'active',
+      );
+      Notification.reminderSomeTicket(
+        `Hello ${userInformation.firstName} ${userInformation.lastName}`,
+        `You Have ${ticketActive.length} Ticket to use, happy watching!`,
+      );
+    }
+    getTicketActive();
+    getOrderHistoryUserBuyTicket();
     getDataUser();
     dispatch(getUser());
-    getOrderHistoryUserBuyTicket();
   }, []);
 
   const changeMenuScreen = menu => {
@@ -204,8 +215,9 @@ export default function Profile({navigation}) {
         setPopUpSettings(false);
       }, 2000);
       setFormImage({image: ''});
-      dispatch(getUser());
+      getDataUser();
     } catch (error) {
+      console.log('error image =>', error.response);
       Toast.show({
         type: 'error',
         text1: `Hello ${users.firstName} ${users.lastName}`,
@@ -676,7 +688,6 @@ const styles = StyleSheet.create({
     width: 136,
     height: 136,
     borderRadius: 100,
-    resizeMode: 'contain',
   },
   profile_card_body_information_title: {
     fontWeight: '600',
